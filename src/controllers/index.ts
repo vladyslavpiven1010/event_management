@@ -1,0 +1,6 @@
+export * from './category/category.controller'
+export * from './comment/comment.controller'
+export * from './event/event.controller'
+export * from './post/post.controller'
+export * from './ticket/ticket.controller'
+export * from './user-event/user-event.controller'
