@@ -3,38 +3,36 @@ import { Body, Controller, Post, Get, UsePipes, ValidationPipe, Patch, Param } f
 import { TicketService } from 'src/core/services';
 import { CreateTicketReqApiDto } from './dto/create-ticket.dto';
 import { UpdateTicketReqApiDto } from './dto/update-ticket.dto';
-import { QueryOptions } from 'src/core/abstracts';
 
 @Controller('ticket')
 export class TicketController {
-    constructor(private _ticketService: TicketService) {}
+    constructor(private ticketService: TicketService) {}
 
     @Get()
     //@CheckAuth()
-    async getTickets(@Body() options: QueryOptions): Promise<any> {
-
-        const ticket = await this._ticketService.getTickets(options);
+    async getTickets(): Promise<any> {
+        const ticket = await this.ticketService.findAll();
         return ticket;
     }
 
     @Get(':id')
     //@CheckAuth()
     async getTicket(@Param() params): Promise<any> {
-        const ticket = await this._ticketService.getTicket(params.id);
+        const ticket = await this.ticketService.findOne(params.id);
         return ticket;
     }
 
     @Post()
     //@CheckAuth()
     async createTicket(@Body() ticketDto: CreateTicketReqApiDto): Promise<any> {
-        const ticket = await this._ticketService.createTicket(ticketDto);
+        const ticket = await this.ticketService.create(ticketDto);
         return ticket;
     }
 
     @Patch(':id')
     //@CheckAuth()
     async updateTicket(@Param() params: number, @Body() ticketDto: UpdateTicketReqApiDto): Promise<any> {
-        const ticket = await this._ticketService.updateTicket(params["id"], ticketDto);
+        const ticket = await this.ticketService.update(params["id"], ticketDto);
         return ticket;
     }
 }

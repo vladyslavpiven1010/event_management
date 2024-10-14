@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
 import { User } from './user.entity';
 
 /**
@@ -11,9 +11,9 @@ export class VerificationCode {
   id: number;
 
   @ManyToOne((type) => User, (user) => user.id)
-  users: User[];
+  user_id: User[];
 
-  @Column()
+  @CreateDateColumn()
   created_at: Date;
 
   @Column()

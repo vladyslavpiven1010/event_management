@@ -12,7 +12,7 @@
 //   is_verified: boolean;
 // }
 
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, DeleteDateColumn } from 'typeorm';
 import { Role } from './role.entity';
 import { Event } from './event.entity';
 import { Ticket } from './ticket.entity';
@@ -29,10 +29,10 @@ export class User {
   id: number;
 
   @ManyToOne((type) => Role, (role) => role.id)
-  role: Role;
+  role_id: Role;
 
   @ManyToOne((type) => Company, (company) => company.id)
-  company: Company;
+  company_id: Company;
 
   @OneToMany((type) => Event, (event) => event.id)
   events: Event[];
@@ -40,7 +40,7 @@ export class User {
   @OneToMany((type) => Ticket, (ticket) => ticket.event_id)
   tickets: Ticket[];
 
-  @OneToMany((type) => VerificationCode, (verification_code) => verification_code.users)
+  @OneToMany((type) => VerificationCode, (verification_code) => verification_code.user_id)
   verification_code: VerificationCode[];
 
   @Column()
@@ -64,9 +64,9 @@ export class User {
   @Column()
   gender?: string;
 
-  @Column()
+  @CreateDateColumn()
   created_at: Date;
 
-  @Column()
-  deleted_at?: Date;
+  @DeleteDateColumn()
+  deleted_at: Date;
 }

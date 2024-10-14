@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, DeleteDateColumn } from 'typeorm';
 import { User } from './user.entity';
 
 /**
@@ -10,7 +10,7 @@ export class Company {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToMany((type) => User, (user) => user.company)
+  @OneToMany((type) => User, (user) => user.company_id)
   users: User[];
 
   @Column()
@@ -25,9 +25,9 @@ export class Company {
   @Column({default: false})
   is_verified: boolean;
 
-  @Column()
+  @CreateDateColumn()
   created_at: Date;
 
-  @Column()
+  @DeleteDateColumn()
   deleted_at?: Date;
 }

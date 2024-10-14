@@ -9,7 +9,7 @@
 //   deleted_at: Date;
 // }
 
-import { Entity, PrimaryColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryColumn, Column, ManyToOne, CreateDateColumn, DeleteDateColumn } from 'typeorm';
 import { User } from './user.entity';
 import { Event } from './event.entity';
 
@@ -27,9 +27,9 @@ export class Ticket {
   @ManyToOne((type) => Event, (event) => event.id)
   event_id: Event;
 
-  @Column()
+  @CreateDateColumn()
   created_at: Date;
 
-  @Column()
-  deleted_at?: Date;
+  @DeleteDateColumn()
+  deleted_at: Date;
 }

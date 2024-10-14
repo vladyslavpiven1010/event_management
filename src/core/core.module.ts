@@ -4,6 +4,7 @@ import { TokenService } from './services/token/token.service';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Category, Event, Ticket, User } from './entities';
+import { DatabaseProvider } from './providers/db.provider';
 
 @Module({
   providers: [

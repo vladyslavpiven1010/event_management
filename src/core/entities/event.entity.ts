@@ -17,7 +17,7 @@
 //   event_date: Date;
 // }
 
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, DeleteDateColumn } from 'typeorm';
 import { Category } from './category.entity';
 import { User } from './user.entity';
 import { Ticket } from './ticket.entity';
@@ -38,7 +38,7 @@ export class Event {
   tickets: Ticket[];
 
   @ManyToOne((type) => Category, (category) => category.id)
-  category: Category;
+  category_id: Category;
 
   @Column()
   description?: string;
@@ -55,11 +55,11 @@ export class Event {
   @Column()
   lng: number;
 
-  @Column()
+  @CreateDateColumn()
   created_at: Date;
 
-  @Column()
-  deleted_at?: Date;
+  @DeleteDateColumn()
+  deleted_at: Date;
 
   @Column()
   event_date: Date;

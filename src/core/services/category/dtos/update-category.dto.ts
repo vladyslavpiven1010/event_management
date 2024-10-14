@@ -1,3 +1,4 @@
 export interface UpdateCategoryDto {
-  name: string;
+  name?: string;
+  description?: string;
 }
