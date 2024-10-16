@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, JoinColumn } from 'typeorm';
 import { User } from './user.entity';
 
 /**
@@ -10,7 +10,10 @@ export class VerificationCode {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne((type) => User, (user) => user.id)
+  @ManyToOne((type) => User, (user) => user.id, {
+    cascade: true
+  })
+  @JoinColumn({ name: 'user_id' })
   user_id: User[];
 
   @CreateDateColumn()
@@ -20,5 +23,5 @@ export class VerificationCode {
   expires_at: Date;
 
   @Column({default: false})
-  is_used: Date;
+  is_used: boolean;
 }

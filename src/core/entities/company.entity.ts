@@ -28,6 +28,6 @@ export class Company {
   @CreateDateColumn()
   created_at: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ nullable: true })
   deleted_at?: Date;
 }

@@ -1,20 +1,40 @@
-import { UpdateTicketDto } from 'src/core/services/ticket/dtos';
-import { IsInt, IsOptional, IsDate } from 'class-validator';
+import { IsInt, IsOptional, IsDate, IsString } from 'class-validator';
+import { UpdateUserDto } from 'src/core/services/user/dto';
 
-export class UpdateTicketReqApiDto implements UpdateTicketDto {
+export class UpdateUserReqApiDto implements UpdateUserDto {
   @IsOptional()
   @IsInt()
-  user_id: number;
+  role_id: number;
 
   @IsOptional()
   @IsInt()
-  event_id: number;
+  company_id: number;
+
+  @IsOptional()
+  @IsString()
+  username: string;
+
+  @IsOptional()
+  @IsString()
+  name: string;
+
+  @IsOptional()
+  @IsString()
+  email: string;
+
+  @IsOptional()
+  @IsString()
+  password: string;
+
+  @IsOptional()
+  @IsString()
+  bio: string;
 
   @IsOptional()
   @IsDate()
-  created_at: Date;
+  birth_date: Date;
 
   @IsOptional()
-  @IsDate()
-  deleted_at: Date;
+  @IsString()
+  gender: string;
 }

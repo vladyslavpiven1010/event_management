@@ -26,19 +26,29 @@ export class TicketService {
   //   private eventRepository: Repository<Event>,
   // ) {}
 
-  findAll(): Promise<Ticket[]> {
-    return this.ticketRepository.find();
+  async findAll(): Promise<Ticket[]> {
+    return this.ticketRepository
+      .createQueryBuilder('ticket')
+      .innerJoinAndSelect("ticket.event_id", "event")
+      .innerJoinAndSelect("ticket.user_id", "user")
+      .getMany();
   }
 
   findOne(id: number): Promise<Ticket | null> {
-    return this.ticketRepository.findOneBy({ id });
+    return this.ticketRepository
+      .createQueryBuilder('ticket')
+      .innerJoinAndSelect("ticket.event_id", "event")
+      .innerJoinAndSelect("ticket.user_id", "user")
+      .getOne({ id });
   }
 
   async create(ticket: CreateTicketDto): Promise<Ticket> {
     const event: Event = await this.eventRepository
       .createQueryBuilder("event")
-      .innerJoinAndSelect("event.tickets", "ticket")
+      .leftJoinAndSelect("event.tickets", "ticket")
+      .where("event.id = :event_id", { event_id: ticket.event_id })
       .getOne();
+
     const ticketCount: number = await this.ticketRepository
       .createQueryBuilder("ticket")
       .where("ticket.event_id = :event_id", { event_id: ticket.event_id })
@@ -51,6 +61,7 @@ export class TicketService {
 
   async update(id: number, ticket: UpdateTicketDto): Promise<void> {
     await this.ticketRepository.update(id, ticket);
+    return this.ticketRepository.findOneBy({ id });
   }
 
   async remove(id: number): Promise<void> {

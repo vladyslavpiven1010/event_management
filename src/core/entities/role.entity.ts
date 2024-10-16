@@ -10,7 +10,7 @@ export class Role {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToMany((type) => User, (user) => user.role)
+  @OneToMany((type) => User, (user) => user.role_id)
   users: User[];
 
   @Column()

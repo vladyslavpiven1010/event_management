@@ -1,12 +1,15 @@
 import { Body, Controller, Post, Get, Patch, Param, Delete } from '@nestjs/common';
-import { CompanyService } from 'src/core/services';
+import { CompanyService, UserService } from 'src/core/services';
 import { CreateCompanyReqApiDto } from './dto/create-companydto';
 import { UpdateCompanyReqApiDto } from './dto/update-company.dto';
 //import { CheckAuth, User } from 'src/guards';
 
 @Controller('company')
 export class CompanyController {
-  constructor(private companyService: CompanyService) {}
+  constructor(
+    private companyService: CompanyService, 
+    private userService: UserService) 
+    {}
 
   @Get()
   //@CheckAuth()
@@ -25,9 +28,8 @@ export class CompanyController {
   @Post()
   //@CheckAuth()
   async createCompany(@Body() companyDto: CreateCompanyReqApiDto): Promise<any> {
-      console.log(companyDto)
-      const company = await this.companyService.create(companyDto);
-      return company;
+    const company = await this.companyService.create(companyDto);
+    return company;
   }
 
   @Patch(':id')
@@ -40,7 +42,7 @@ export class CompanyController {
   @Delete(':id')
   //@CheckAuth()
   async deleteCompany(@Param() params: number): Promise<any> {
-      const company = await this.companyService.remove(params["id"]);
-      return company;
+    const company = await this.companyService.remove(params["id"]);
+    return company;
   }
 }

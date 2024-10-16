@@ -4,9 +4,12 @@ import { CoreModule } from './core/core.module';
 import { 
   CategoryController,
   EventController,
-  TicketController
+  TicketController,
+  UserController,
+  CompanyController
 } from './controllers';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Category, Company, Event, Role, Ticket, User, VerificationCode } from './core/entities';
 
 @Module({
   imports: [
@@ -15,9 +18,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: 'postgres',
+      password: '1111',
       database: 'event_management',
-      entities: [],
+      entities: [User, Company, Event, Ticket, Role, VerificationCode, Category],
       synchronize: true,
       autoLoadEntities: true
     }),
@@ -27,7 +30,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   controllers: [
     CategoryController, 
     EventController, 
-    TicketController
+    TicketController,
+    UserController,
+    CompanyController
   ],
   providers: [],
 })

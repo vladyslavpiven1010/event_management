@@ -20,7 +20,7 @@ export class Category {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToMany((type) => Event, (event) => event.category)
+  @OneToMany((type) => Event, (event) => event.category_id)
   events: Event[];
 
   @Column()

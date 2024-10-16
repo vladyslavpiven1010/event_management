@@ -17,7 +17,7 @@
 //   event_date: Date;
 // }
 
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, DeleteDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, DeleteDateColumn, JoinColumn } from 'typeorm';
 import { Category } from './category.entity';
 import { User } from './user.entity';
 import { Ticket } from './ticket.entity';
@@ -31,16 +31,22 @@ export class Event {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne((type) => User, (user) => user.id)
+  @ManyToOne((type) => User, (user) => user.id, {
+    cascade: true,
+  })
+  @JoinColumn({ name: 'user_id' })
   user_id: number;
 
   @OneToMany((type) => Ticket, (ticket) => ticket.event_id)
   tickets: Ticket[];
 
-  @ManyToOne((type) => Category, (category) => category.id)
+  @ManyToOne((type) => Category, (category) => category.id, {
+    cascade: true,
+  })
+  @JoinColumn({ name: 'category_id' })
   category_id: Category;
 
-  @Column()
+  @Column({ nullable: true })
   description?: string;
 
   @Column()
@@ -58,7 +64,7 @@ export class Event {
   @CreateDateColumn()
   created_at: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ nullable: true })
   deleted_at: Date;
 
   @Column()

@@ -12,7 +12,7 @@
 //   is_verified: boolean;
 // }
 
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, DeleteDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, DeleteDateColumn, JoinColumn } from 'typeorm';
 import { Role } from './role.entity';
 import { Event } from './event.entity';
 import { Ticket } from './ticket.entity';
@@ -28,10 +28,17 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne((type) => Role, (role) => role.id)
+  @ManyToOne((type) => Role, (role) => role.id, {
+    cascade: true,
+  })
+  @JoinColumn({ name: 'role_id' })
   role_id: Role;
 
-  @ManyToOne((type) => Company, (company) => company.id)
+  @ManyToOne((type) => Company, (company) => company.id, {
+    cascade: true,
+    nullable: true
+  })
+  @JoinColumn({ name: 'company_id' })
   company_id: Company;
 
   @OneToMany((type) => Event, (event) => event.id)
@@ -55,18 +62,21 @@ export class User {
   @Column()
   password: string;
 
-  @Column()
+  @Column({ nullable: true })
   bio?: string;
 
-  @Column()
+  @Column({ nullable: true })
   birth_date?: string;
 
-  @Column()
+  @Column({ nullable: true })
   gender?: string;
+
+  @Column({ default: false })
+  is_verified: boolean;
 
   @CreateDateColumn()
   created_at: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ nullable: true })
   deleted_at: Date;
 }

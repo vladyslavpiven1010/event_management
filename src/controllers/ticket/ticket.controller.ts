@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, UsePipes, ValidationPipe, Patch, Param } from '@nestjs/common';
+import { Body, Controller, Post, Get, UsePipes, ValidationPipe, Patch, Param, Delete } from '@nestjs/common';
 //import { CheckAuth, User } from 'src/guards';
 import { TicketService } from 'src/core/services';
 import { CreateTicketReqApiDto } from './dto/create-ticket.dto';
@@ -33,6 +33,13 @@ export class TicketController {
     //@CheckAuth()
     async updateTicket(@Param() params: number, @Body() ticketDto: UpdateTicketReqApiDto): Promise<any> {
         const ticket = await this.ticketService.update(params["id"], ticketDto);
+        return ticket;
+    }
+
+    @Delete(':id')
+    //@CheckAuth()
+    async deleteTicket(@Param() params: number): Promise<any> {
+        const ticket = await this.ticketService.remove(params["id"]);
         return ticket;
     }
 }

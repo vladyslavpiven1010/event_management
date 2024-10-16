@@ -14,12 +14,29 @@ export class EventService {
     this.eventRepository = this.dataSource.getRepository(Event);
   }
 
-  findAll(): Promise<Event[]> {
-    return this.eventRepository.find();
+  findAll(
+    sortBy: keyof Event,
+    sortOrder: 'ASC' | 'DESC',
+    filterByCategory: number[],
+    filterByTicketPrice: number[]
+  ): Promise<Event[]> {
+    const query = this.eventRepository.createQueryBuilder('event');
+
+    if (filterByCategory.length > 0) query.andWhere('event.category_id IN (:...categories)', { categories: filterByCategory});
+    if (filterByTicketPrice.length > 0) query.andWhere('event.ticket_price BETWEEN :from AND :to', { from: filterByTicketPrice[0], to: filterByTicketPrice[1] });
+
+    return query
+      .orderBy(`event.${sortBy}`, sortOrder)
+      .innerJoinAndSelect("event.category_id", "category")
+      .innerJoinAndSelect("event.user_id", "user")
+      .getMany();
   }
 
   findOne(id: number): Promise<Event | null> {
-    return this.eventRepository.findOneBy({ id });
+    return this.eventRepository.createQueryBuilder('event')
+    .innerJoinAndSelect("event.category_id", "category")
+    .innerJoinAndSelect("event.user_id", "user")
+    .getOne({ id });
   }
 
   async create(event: CreateEventDto): Promise<Event> {
@@ -34,57 +51,10 @@ export class EventService {
 
   async update(id: number, event: UpdateEventDto): Promise<void> {
     await this.eventRepository.update(id, event);
+    return this.eventRepository.findOneBy({ id });
   }
 
   async remove(id: number): Promise<void> {
     await this.eventRepository.delete(id);
   }
-  // constructor(public _dataProvider: IDataProvider) {}
-
-  // @Transaction()
-  // public async createEvent(eventDto: CreateEventDto, @DataClient() dataClient?: IDataClient): Promise<Event> {
-  //   const eventDraft: Event = {
-  //     ...eventDto,
-  //     created_at: new Date(),
-  //     deleted_at: null,
-  //     //date: new Date(eventDto.date)
-  //   };
-  //   const Event = await dataClient.event.create(eventDraft);
-  //   return Event;
-  // }
-
-  // @Transaction()
-  // public async getEvent(eventId: number, @DataClient() dataClient?: IDataClient): Promise<Event> {
-  //   const event = await dataClient.event.findById(eventId);
-  //   if (!event) throw new NotFoundException('There is no such Event with this ID');
-  //   return event;
-  // }
-
-  // @Transaction()
-  // public async getEventByOption(options: QueryOptions, @DataClient() dataClient?: IDataClient): Promise<Event> {
-  //   const event = await dataClient.event.findOne(options)
-  //   if (!event) throw new NotFoundException('There is no such Event with this option');
-  //   return event;
-  // }
-
-  // @Transaction()
-  // public async getEvents(options: QueryOptions, @DataClient() dataClient?: IDataClient): Promise<Event[]> {
-  //   const event = await dataClient.event.findAll(options);
-  //   if (!event) throw new NotFoundException('There is no such Event with this options');
-  //   return event;
-  // }
-
-  // @Transaction()
-  // public async updateEvent(EventId: number, eventDto: UpdateEventDto, @DataClient() dataClient?: IDataClient): Promise<Event> {
-  //   const event = await dataClient.event.updateById(EventId, eventDto);
-  //   if (!event) throw new NotFoundException('There is no such Event with this ID');
-  //   return event;
-  // }
-
-  // @Transaction()
-  // public async updateEvents(options: QueryOptions, eventDto: UpdateEventDto, @DataClient() dataClient?: IDataClient): Promise<Event[]> {
-  //   const event = await dataClient.event.updateAll(options, eventDto);
-  //   if (!event) throw new NotFoundException('There is no such Event with this options');
-  //   return event;
-  // }
 }

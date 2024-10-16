@@ -1,4 +1,5 @@
 export interface CreateCompanyDto {
+  user_id: number;
   name: string;
   description: string;
   country_code: string;

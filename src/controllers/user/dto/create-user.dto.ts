@@ -1,16 +1,35 @@
-import { CreateTicketDto } from 'src/core/services/ticket/dtos';
-import { IsDate, IsInt } from 'class-validator';
+import { IsDate, IsInt, IsOptional, IsString } from 'class-validator';
+import { CreateUserDto } from 'src/core/services/user/dto';
 
-export class CreateTicketReqApiDto implements CreateTicketDto {
+export class CreateUserReqApiDto implements CreateUserDto {
   @IsInt()
-  user_id: number;
+  role_id: number;
 
+  @IsOptional()
   @IsInt()
-  event_id: number;
+  company_id: number;
 
-  @IsDate()
-  created_at: Date;
+  @IsString()
+  username: string;
 
+  @IsString()
+  name: string;
+
+  @IsString()
+  email: string;
+
+  @IsString()
+  password: string;
+
+  @IsOptional()
+  @IsString()
+  bio: string;
+
+  @IsOptional()
   @IsDate()
-  deleted_at: Date;
+  birth_date: Date;
+
+  @IsOptional()
+  @IsString()
+  gender: string;
 }

@@ -30,6 +30,7 @@ export class CategoryService {
 
   async update(id: number, category: UpdateCategoryDto): Promise<void> {
     await this.categoryRepository.update(id, category);
+    return this.categoryRepository.findOneBy({ id });
   }
 
   async remove(id: number): Promise<void> {
