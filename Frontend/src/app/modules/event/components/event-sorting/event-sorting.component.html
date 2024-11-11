@@ -1,0 +1,14 @@
+<ul class="sorting">
+    <li class="sorting__sort sort">
+        <div class="sort__title">
+            <h3 class="sort__title-text">{{sortMethodDisplay}}</h3>
+            <a href="javascript:void(0);" (click)="ShowSort()" class="sort__show">+</a>
+        </div>
+        <ul class="sort__list" id="sort">
+            <li class="sort__list-elem" (click)="ChooseSortMethod('date')">Date</li>
+            <li class="sort__list-elem" (click)="ChooseSortMethod('name')">Name</li>
+            <li class="sort__list-elem" (click)="ChooseSortMethod('ticket_price')">Ticket Price</li>
+            <li class="sort__list-elem" (click)="ChooseSortMethod('ticket_count')">Ticket Count</li>
+        </ul>
+    </li>
+</ul>

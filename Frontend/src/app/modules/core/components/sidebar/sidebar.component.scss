@@ -1,0 +1,6 @@
+@use '/src/environment' as *;
+
+:host {
+  border-right: 1px solid $border-color;
+  background-color: $sidebar-color;
+}

@@ -1,0 +1,22 @@
+:host {
+    display: grid;
+    grid-template-columns: var(--sidebar-width) 1fr;
+    width: 100%;
+    height: fit-content;
+    height: 100vh;
+    overflow: hidden scroll;
+  }
+  
+  .sidebar {
+    &__component {
+      position: fixed;
+      width: var(--sidebar-width);
+      height: 100vh;
+      box-sizing: border-box;
+    }
+  }
+  
+  :host(.no_scroll) {
+    overflow-y: hidden;
+  }
+  

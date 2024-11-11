@@ -1,0 +1,31 @@
+@import '/src/_environment';
+
+.event-create {
+    background-color: $body-color;
+    width: 100%;
+    height: 100%;
+
+    &__form {
+        display: grid;
+    }
+
+    &__list-category {
+        display: none;
+    }
+
+    &__list-category.responsive {
+        display:block;
+    }
+
+    &__list-format {
+        display: none;
+    }
+
+    &__list-format.responsive {
+        display: block;
+    }
+
+    &__list-elem:hover {
+        background-color: #AAAAAA;
+    }
+}

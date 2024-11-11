@@ -1,0 +1,58 @@
+@import '/src/_environment';
+
+.sorting {
+
+}
+  
+.sort {
+    display: grid;
+    //min-width: 224px;
+  
+    &__title {
+        background: #FFFFFF;
+        padding: 12px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #E6E6E6;
+    }
+  
+    &__title-text {
+        font-size: 1rem;
+        line-height: 1.5rem;
+        font-weight: 500;
+        margin: 0px;
+    }
+  
+    @media (max-width: 550px) {
+        &__title {
+            padding: 24px;
+        }
+    }
+  
+    &__title > a {
+        margin-left: 24px;
+        z-index: 9999;
+    }
+  
+    &__list {
+        display: none;
+    }
+
+    &__list.responsive {
+        display: block;
+    }
+
+    &__list-elem {
+        padding: $padding-tiny $padding-small;
+    }
+
+    &__list-elem:hover {
+        background-color: #AAAAAA;
+    }
+
+    &__list-elem > a {
+        width: 100%;
+    }
+  }
