@@ -10,4 +10,5 @@ export interface UpdateUserDto {
   gender?: string;
   created_at?: Date;
   deleted_at?: Date;
+  refresh_token?: string;
 }

@@ -33,6 +33,8 @@ export class Event {
 
   @ManyToOne((type) => User, (user) => user.id, {
     cascade: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
   })
   @JoinColumn({ name: 'user_id' })
   user_id: number;
@@ -42,6 +44,8 @@ export class Event {
 
   @ManyToOne((type) => Category, (category) => category.id, {
     cascade: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
   })
   @JoinColumn({ name: 'category_id' })
   category_id: Category;

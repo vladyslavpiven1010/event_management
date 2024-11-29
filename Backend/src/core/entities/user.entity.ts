@@ -1,17 +1,3 @@
-// import { Entity } from './shared/interfaces';
-
-// /**
-//  * Entity interface that represents user.
-//  */
-// export interface User extends Entity {
-//   username: string;
-//   email: string;
-
-//   created_at: Date;
-//   deleted_at: Date;
-//   is_verified: boolean;
-// }
-
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, DeleteDateColumn, JoinColumn } from 'typeorm';
 import { Role } from './role.entity';
 import { Event } from './event.entity';
@@ -30,13 +16,17 @@ export class User {
 
   @ManyToOne((type) => Role, (role) => role.id, {
     cascade: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
   })
   @JoinColumn({ name: 'role_id' })
   role_id: Role;
 
   @ManyToOne((type) => Company, (company) => company.id, {
     cascade: true,
-    nullable: true
+    nullable: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
   })
   @JoinColumn({ name: 'company_id' })
   company_id: Company;

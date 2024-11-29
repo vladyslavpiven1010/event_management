@@ -6,8 +6,8 @@ export interface CreateUserDto {
   email: string;
   password: string;
   bio?: string;
-  birth_date: Date;
-  gender: string;
+  birth_date?: Date;
+  gender?: string;
   created_at?: Date;
   deleted_at?: Date;
 }

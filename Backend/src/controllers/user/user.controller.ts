@@ -1,43 +1,50 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { UserService } from 'src/core/services';
 import { CreateUserReqApiDto } from './dto/create-user.dto';
 import { UpdateUserReqApiDto } from './dto/update-user.dto';
+import { JwtAuthGuard, ERole } from 'src/core/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { RequiredRoles } from '../auth/roles.decorator';
 
 @Controller('user')
+@UseGuards(JwtAuthGuard)
 export class UserController {
     constructor(private userService: UserService) {}
 
     @Get()
-    //@CheckAuth()
     async getUsers(): Promise<any> {
         const user = await this.userService.findAll();
         return user;
     }
 
     @Get(':id')
-    //@CheckAuth()
-    async getUser(@Param() params): Promise<any> {
-        const user = await this.userService.findOne(params.id);
+    async getUser(@Param() params, @Req() req: Request): Promise<any> {
+        const user = await this.userService.findOneById(params.id);
         return user;
     }
 
     @Post()
-    //@CheckAuth()
     async createUser(@Body() userDto: CreateUserReqApiDto): Promise<any> {
         const user = await this.userService.create(userDto);
         return user;
     }
 
     @Patch(':id')
-    //@CheckAuth()
     async updateUser(@Param() params: number, @Body() userDto: UpdateUserReqApiDto): Promise<any> {
         const user = await this.userService.update(params["id"], userDto);
         return user;
     }
 
     @Delete(':id')
-    //@CheckAuth()
-    async deleteTicket(@Param() params: number): Promise<any> {
+    async ownAccount(@Param() params: number): Promise<any> {
+        const ticket = await this.userService.remove(params["id"]);
+        return ticket;
+    }
+
+    @UseGuards(RolesGuard)
+    @RequiredRoles(ERole.ADMIN)
+    @Delete('any/:id')
+    async deleteUser(@Param() params: number): Promise<any> {
         const ticket = await this.userService.remove(params["id"]);
         return ticket;
     }

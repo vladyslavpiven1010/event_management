@@ -1,17 +1,18 @@
-import { Body, Controller, Post, Get, Patch, Param, Query, Delete, ParseArrayPipe } from '@nestjs/common';
-//import { CheckAuth, User } from 'src/guards';
+import { Body, Controller, Post, Get, Patch, Param, Query, Delete, ParseArrayPipe, UseGuards } from '@nestjs/common';
 import { EventService } from 'src/core/services';
 import { CreateEventReqApiDto } from './dto/create-event.dto';
 import { UpdateEventReqApiDto } from './dto/update-event.dto';
 import { Event } from 'src/core/entities';
+import { JwtAuthGuard, ERole } from 'src/core/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { RequiredRoles } from '../auth/roles.decorator';
 
 @Controller('event')
 export class EventController {
     constructor(private eventService: EventService) {}
 
     @Get()
-    //@CheckAuth()
-    async getCategories(
+    async getEvents(
         @Query('sortBy') sortBy?: keyof Event,
         @Query('sortOrder') sortOrder: 'ASC' | 'DESC' = 'ASC',
         @Query('filterByCategory') filterByCategory?: string,
@@ -27,28 +28,30 @@ export class EventController {
     }
 
     @Get(':id')
-    //@CheckAuth()
-    async getHandler(@Param() params): Promise<any> {
+    async getEvent(@Param() params): Promise<any> {
         const event = await this.eventService.findOne(params.id);
         return event;
     }
 
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @RequiredRoles(ERole.COMPANY_USER, ERole.ADMIN)
     @Post()
-    //@CheckAuth()
-    async createHandler(@Body() eventDto: CreateEventReqApiDto): Promise<any> {
+    async createEvent(@Body() eventDto: CreateEventReqApiDto): Promise<any> {
         const event = await this.eventService.create(eventDto);
         return event;
     }
 
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @RequiredRoles(ERole.COMPANY_USER, ERole.ADMIN)
     @Patch(':id')
-    //@CheckAuth()
-    async updateHandler(@Param() params: number, @Body() eventDto: UpdateEventReqApiDto): Promise<any> {
+    async updateEvent(@Param() params: number, @Body() eventDto: UpdateEventReqApiDto): Promise<any> {
         const event = await this.eventService.update(params["id"], eventDto);
         return event;
     }
 
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @RequiredRoles(ERole.COMPANY_USER, ERole.ADMIN)
     @Delete(':id')
-    //@CheckAuth()
     async deleteEvent(@Param() params: number): Promise<any> {
         const event = await this.eventService.remove(params["id"]);
         return event;

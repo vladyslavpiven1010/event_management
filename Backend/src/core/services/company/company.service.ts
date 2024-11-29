@@ -1,14 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { Company, User } from 'src/core/entities';
 import { DataSource } from 'typeorm';
 import { CreateCompanyDto, UpdateCompanyDto } from './dto';
+import { UserService } from '../user/user.service';
+import { ERole } from 'src/core/jwt-auth.guard';
 
 @Injectable()
 export class CompanyService {
   private companyRepository;
   private userRepository;
 
-  constructor(private dataSource: DataSource) {
+  constructor(private dataSource: DataSource, private usersService: UserService) {
     this.companyRepository = this.dataSource.getRepository(Company);
     this.userRepository = this.dataSource.getRepository(User);
   }
@@ -21,20 +23,24 @@ export class CompanyService {
     return this.companyRepository.findOneBy({ id });
   }
 
-  async create(company: CreateCompanyDto): Promise<Company> {
-    const newCompany = {
-      name: company.name,
-      description: company.description,
-      country_code: company.country_code,
-      is_verified: company.is_verified,
-      created_at: company.created_at,
-      deleted_at: company.deleted_at
+  async create(userId: number, company: CreateCompanyDto): Promise<Company> {
+    const user = await this.usersService.findOneById(company.user_id);
+    console.log(user)
+    if (user.role_id.name !== ERole.USER) {
+      throw new ForbiddenException('Only users with role "user" can create a company');
     }
 
-    const result = await this.companyRepository.create(company);
-    // const owner = await this.userRepository.update({id: company.user_id}, {company_id: result.id});
-
-    return await this.companyRepository.save(result);
+    const newC = {
+      ...company,
+      created_at: new Date(),
+      deleted_at: null
+    }
+    
+    const newCompany = this.companyRepository.create({ newC });
+    await this.usersService.updateRole(userId, ERole.COMPANY_USER);
+    await this.companyRepository.save(company);
+    
+    return newCompany;
   }
 
   async update(id: number, company: UpdateCompanyDto): Promise<void> {
