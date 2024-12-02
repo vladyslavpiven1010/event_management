@@ -18,8 +18,8 @@ import { Category, Company, Event, Role, Ticket, User, VerificationCode } from '
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: '1111',
-      database: 'event_management',
+      password: 'postgres',
+      database: 'Event_Management_System',
       entities: [User, Company, Event, Ticket, Role, VerificationCode, Category],
       synchronize: true,
       autoLoadEntities: true
@@ -34,6 +34,6 @@ import { Category, Company, Event, Role, Ticket, User, VerificationCode } from '
     UserController,
     CompanyController
   ],
-  providers: [],
+  providers: []
 })
 export class AppModule {}
