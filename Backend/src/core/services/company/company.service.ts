@@ -1,14 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { Company, User } from 'src/core/entities';
 import { DataSource } from 'typeorm';
 import { CreateCompanyDto, UpdateCompanyDto } from './dto';
+import { UserService } from '../user/user.service';
+import { ERole } from 'src/core/jwt-auth.guard';
 
 @Injectable()
 export class CompanyService {
   private companyRepository;
   private userRepository;
 
-  constructor(private dataSource: DataSource) {
+  constructor(private dataSource: DataSource, private userService: UserService) {
     this.companyRepository = this.dataSource.getRepository(Company);
     this.userRepository = this.dataSource.getRepository(User);
   }
@@ -22,24 +24,33 @@ export class CompanyService {
   }
 
   async create(company: CreateCompanyDto): Promise<Company> {
-    const newCompany = {
-      name: company.name,
-      description: company.description,
-      country_code: company.country_code,
-      is_verified: company.is_verified,
-      created_at: company.created_at,
-      deleted_at: company.deleted_at
+    const newC = {
+      ...company,
+      created_at: new Date(),
+      deleted_at: null
     }
-
-    const result = await this.companyRepository.create(company);
-    // const owner = await this.userRepository.update({id: company.user_id}, {company_id: result.id});
-
-    return await this.companyRepository.save(result);
+    
+    const newCompany: Company = this.companyRepository.create(newC);
+    await this.companyRepository.save(newCompany);
+    
+    return newCompany;
   }
 
   async update(id: number, company: UpdateCompanyDto): Promise<void> {
     await this.companyRepository.update(id, company);
     return this.companyRepository.findOneBy({ id });
+  }
+
+  async kickOutUser(userId: number): Promise<void> {
+    await this.userService.updateToUserRole(userId);
+  }
+
+  async kickOutAllUsers(company_id: number): Promise<void> {
+    const members: User[] = await this.userService.findCompanyMembers(company_id);
+
+    members.map(member => {
+      return this.kickOutUser(member.id);
+    })
   }
 
   async remove(id: number): Promise<void> {

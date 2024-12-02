@@ -5,6 +5,7 @@ export * from './user.entity';
 export * from './role.entity';
 export * from './verification-code.entity';
 export * from './company.entity';
+export * from './token.entity';
 
 // export shared
 export * from './shared/enums';
