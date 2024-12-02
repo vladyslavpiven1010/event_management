@@ -33,15 +33,21 @@ export class Event {
 
   @ManyToOne((type) => User, (user) => user.id, {
     cascade: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    nullable: false
   })
   @JoinColumn({ name: 'user_id' })
-  user_id: number;
+  user_id: User;
 
   @OneToMany((type) => Ticket, (ticket) => ticket.event_id)
   tickets: Ticket[];
 
   @ManyToOne((type) => Category, (category) => category.id, {
     cascade: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    nullable: false
   })
   @JoinColumn({ name: 'category_id' })
   category_id: Category;

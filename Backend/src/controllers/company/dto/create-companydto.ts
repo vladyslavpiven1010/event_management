@@ -1,10 +1,7 @@
-import { IsBoolean, IsDate, IsInt, IsString } from 'class-validator';
+import { IsBoolean, IsDate, IsString } from 'class-validator';
 import { CreateCompanyDto } from 'src/core/services/company/dto';
 
 export class CreateCompanyReqApiDto implements CreateCompanyDto {
-  @IsInt()
-  user_id: number;
-
   @IsString()
   name: string;
 

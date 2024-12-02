@@ -1,23 +1,34 @@
-import { Injectable, NotImplementedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { AccessTokenPayload } from 'src/core/entities';
-/**
- * Class that represents user service. It contains business logic of authentication process.
- */
-@Injectable()
-export class TokenService {
-  constructor(private _jwtService: JwtService) {}
+import { Injectable } from '@nestjs/common';
+import { Token, User } from 'src/core/entities';
+import { DataSource } from 'typeorm';
 
-  public signAccessToken(userId: number, userStatus: number, sessionId?: number): string {
-    const payload: AccessTokenPayload = {
-      sub: userId,
-      ses: sessionId ? sessionId : null,
-      sta: userStatus,
-    };
-    return this._jwtService.sign(payload);
+@Injectable()
+export class TokenService  {
+  private tokenRepository;
+
+  constructor(private dataSource: DataSource) {
+    this.tokenRepository = this.dataSource.getRepository(Token);
   }
 
-  public verifyAccessToken(token: string): AccessTokenPayload {
-    return this._jwtService.verify(token);
+  async saveToken(accessToken: string, refreshToken: string, user: User): Promise<Token> {
+    const token = {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      user: user
+    };
+    const tokenEntity = this.tokenRepository.create(token);
+    return this.tokenRepository.save(tokenEntity);
+  }
+
+  async invalidateToken(token: string): Promise<void> {
+    await this.tokenRepository.update({ refresh_token: token }, { is_valid: false });
+  }
+
+  async findByRefreshToken(refresh_token: string): Promise<Token | undefined> {
+    return this.tokenRepository.findOne({ where: { refresh_token }, relations: ['user'] });
+  }
+
+  async findByAccessToken(access_token: string): Promise<Token> {
+    return this.tokenRepository.findOne({ where: { access_token }, relations: ['user'] });
   }
 }

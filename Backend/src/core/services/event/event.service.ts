@@ -36,12 +36,14 @@ export class EventService {
     return this.eventRepository.createQueryBuilder('event')
     .innerJoinAndSelect("event.category_id", "category")
     .innerJoinAndSelect("event.user_id", "user")
-    .getOne({ id });
+    .where('event.id = :id', { id })
+    .getOne();
   }
 
-  async create(event: CreateEventDto): Promise<Event> {
+  async create(user_id: number, event: CreateEventDto): Promise<Event> {
     const newEvent = {
       ...event,
+      user_id: user_id,
       created_at: new Date(),
       deleted_at: null
     }
@@ -49,12 +51,12 @@ export class EventService {
     return await this.eventRepository.save(result);
   }
 
-  async update(id: number, event: UpdateEventDto): Promise<void> {
+  async update(id: number, event: UpdateEventDto): Promise<Event> {
     await this.eventRepository.update(id, event);
     return this.eventRepository.findOneBy({ id });
   }
 
-  async remove(id: number): Promise<void> {
-    await this.eventRepository.delete(id);
+  async remove(id: number): Promise<Event> {
+    return await this.eventRepository.delete(id);
   }
 }

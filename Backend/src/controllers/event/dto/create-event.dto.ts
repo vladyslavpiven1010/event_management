@@ -2,10 +2,6 @@ import { CreateEventDto } from 'src/core/services/event/dtos';
 import { IsInt, IsOptional, MaxLength, MinLength, IsDate} from 'class-validator';
 
 export class CreateEventReqApiDto implements CreateEventDto {
-  @IsOptional()
-  @IsInt()
-  user_id: number;
-
   @IsInt()
   category_id: number;
 
