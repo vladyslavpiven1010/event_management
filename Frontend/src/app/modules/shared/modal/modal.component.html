@@ -1,0 +1,9 @@
+<div class="modal__background" (click)="modalService.hide()"></div>
+<div class="modal__container" #container>
+  <ndc-dynamic *ngIf="modal"
+    [ndcDynamicComponent]="modal.component"
+    [ndcDynamicInputs]="modal.inputs ? modal.inputs : {}"
+    [ndcDynamicOutputs]="modal.outputs ? modal.outputs : {}"
+    [ndcDynamicAttributes]="modal.attributes ? modal.attributes : {}"
+  ></ndc-dynamic>
+</div>

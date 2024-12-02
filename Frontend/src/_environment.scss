@@ -1,0 +1,40 @@
+// _environment.less
+// USER VARIABLES ENVIRONMENT
+
+// COLORS
+$accent-color: #4D73C6; 	// Primary Accent Color
+$inactive-color: #AAAAAA;
+$danger-color: #C64D4D;
+
+$sale-color: $danger-color;	    // Secondary Accent Color
+$sale-shadow: 0px 4px 10px rgba(198, 77, 77, 0.25);
+$new-color: $accent-color;	 // Secondary Accent Color
+$new-shadow: 0px 4px 10px rgba(77, 115, 198, 0.25);
+
+$title-color: #414141;		// General title color
+$title2-color: #FFFFFF;		// General title color
+$subtitle-color: #FFFFFF;		// General title color
+$text-color: #606060;		// General text color
+$link-color: #8099D0;		// General links color
+
+$body-color: #FFFFFF;		// Document background color
+$section-color: #FFFFFF;	    // Cards background color
+$sidebar-color: #FBFBFB;
+$border-color: #E9E9E7;
+$card-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+
+// FONT
+$font-size: 18px; 									// Document Font Size
+$line-height: 1.3em; 								// Document Line Height
+$user-font: 'Circe'; 								// User Font Family
+$system-font: '-apple-system', 'Arial', sans-serif; // System Font Family
+
+// LAYOUT
+$items-offset: 12px;
+$sections-offset-huge: 72px;
+$sections-offset-small: 24px;
+$padding-huge: 48px;
+$padding-big: 36px;
+$padding-medium: 24px;
+$padding-small: 12px;
+$padding-tiny: 6px;
