@@ -1,8 +1,0 @@
-<nav>
-    <ul class="menu-list">
-      <li routerLink="" class="menu-list__component">Home</li>
-      <li *ngIf="user != ''" routerLink="/tickets" class="menu-list__component">Tickets</li>
-      <li *ngIf="user != '' && companyName != ''" (click)="showCreateEventModal()" class="menu-list__component">Create Event</li>
-    </ul>
-  </nav>
-  
