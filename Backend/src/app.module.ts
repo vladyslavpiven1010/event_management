@@ -12,7 +12,6 @@ import {
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Category, Company, Event, Role, Ticket, User, VerificationCode } from './core/entities';
 import { JwtModule, JwtService } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
 import { APP_GUARD, Reflector } from '@nestjs/core';
 import { JwtAuthGuard } from './core/jwt-auth.guard';
 
@@ -40,11 +39,7 @@ import { JwtAuthGuard } from './core/jwt-auth.guard';
     CompanyController,
     AuthController
   ],
-<<<<<<< HEAD
-  providers: []
-=======
   providers: [],
   exports: []
->>>>>>> bc3c5c4a2811b9ae26b52d3e624787b0fa87c97b
 })
 export class AppModule {}
