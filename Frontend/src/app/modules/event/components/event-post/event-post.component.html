@@ -1,8 +1,0 @@
-<div class="post">
-    <img class="post__image" [src]="post.image_url ? post.image_url : '/assets/images/event.png'">
-    <h3 class="post__title">{{post.title}}</h3>
-    <div *ngIf="post.updated_at != undefined; else elseBlock">Publiched {{post.created_at.toString()}}</div>
-    <ng-template #elseBlock>Updated {{post.updated_at.toString()}}</ng-template>
-
-    <p class="post__content">{{post.content}}</p>
-</div>

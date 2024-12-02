@@ -1,19 +1,27 @@
-import { ESorting } from "./enums";
+import { ESorting, Roles } from "./enums";
 
 export interface Entity {
     id: number;
 }
 
-export interface ICategory extends Entity {
-    name: string;
+export interface IUser extends Entity {
+    username: string
+    name: string
+    email: string
+    password: string
+    role_id: Roles
+    company_id?: number
+    bio?: string
+    birth_date?: string
+    gender?: string
+    is_verified: boolean
+    created_at: Date
+    deleted_at: Date
 }
 
-export interface IComment extends Entity {
-    user_id: number;
-    event_id: number;
-    reply_to_id?: number;
-    content: string;
-    created_at: Date;
+export interface ICategory extends Entity {
+    name: string;
+    description: string;
 }
 
 export interface IEvent extends Entity {
@@ -28,15 +36,9 @@ export interface IEvent extends Entity {
     ticket_price: number;
     date: Date;
     created_at: Date;
-}
-
-export interface IPost extends Entity {
-    event_id: number;
-    image_url?: string;
-    title: string;
-    content: string;
-    created_at: Date;
-    updated_at: Date;
+    deleted_at: Date;
+    lat: number;
+    lng: number;
 }
 
 export interface ITicket extends Entity {
@@ -52,19 +54,8 @@ export interface IUserEvent extends Entity {
     is_receiving_comment: boolean;
 }
 
-export interface WhereOptions {
-    [keys: string]: any;
-}
-
   export interface OrderByOptions {
     [keys: string]: 'ASC' | 'DESC';
-}
-
-export interface QueryOptions {
-    where?: WhereOptions;
-    orderBy?: OrderByOptions;
-    offset?: number;
-    limit?: number;
 }
 
 export interface IFilters {
@@ -79,4 +70,9 @@ export interface FindOptions {
 
 export interface ICompany extends Entity {
     name: string
+    description: string
+    country_code: string
+    is_verified: boolean
+    created_at: Date
+    deleted_at?: Date
 }

@@ -1,6 +1,0 @@
-<ul class="event-post-list">
-    <tp-event-comment *ngFor="let comment of commentList" [comment]="comment"></tp-event-comment>
-</ul>
-
-<button (click)="addComment()">Add comment</button>
-<div class="event-post-list__create" *ngIf="user != ''"><input type="text" id="text" [(ngModel)]="text"></div>

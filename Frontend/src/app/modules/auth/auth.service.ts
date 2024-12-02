@@ -14,7 +14,7 @@ export class AuthService {
   register(user: IRegisterUser): void {
     let userStatus: UserStatus
     console.log(user)
-    this.http.post<IUser>('http://localhost:5001/register', user).subscribe((user) => {
+    this.http.post<IUser>('http://localhost:5000/register', user).subscribe((user) => {
       //localStorage.setItem('token', user.);
       console.log(user)
     }, error => console.log(error)
@@ -22,14 +22,14 @@ export class AuthService {
   }
 
   login(user: ILoginUser): Observable<boolean> {
-    return this.http.post<boolean>('http://localhost:5001/authorize', user);
+    return this.http.post<boolean>('http://localhost:5000/authorize', user);
   }
 
   verifyGet(): Observable<boolean> {
-    return this.http.get<boolean>('http://localhost:5001/verify');
+    return this.http.get<boolean>('http://localhost:5000/verify');
   }
 
   verifyGPost(code: number): Observable<boolean> {
-    return this.http.post<boolean>('http://localhost:5001/verify', {code: code});
+    return this.http.post<boolean>('http://localhost:5000/verify', {code: code});
   }
 }
