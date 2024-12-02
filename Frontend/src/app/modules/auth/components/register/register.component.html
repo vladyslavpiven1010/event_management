@@ -1,0 +1,14 @@
+<div class="register">
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="register__form">
+        <label for="register" class="register__title-label">Login</label>
+        <input class="register__phone-text" placeholder="Login" type="text" name="" id="login" formControlName="phone">
+
+        <label for="password" class="register__password-label">Password</label>
+        <input class="register__password-text" placeholder="Password" type="password" name="" id="password" formControlName="password">
+
+        <label for="password" class="register__password-confirmation-label">Password Confirmation</label>
+        <input class="register__password-confirmation-text" placeholder="Password" type="password" name="" id="password-confirmation" formControlName="passwordConfirmation">
+
+        <button type="submit" [disabled]="!profileForm.valid">Submit</button>
+    </form>
+</div>

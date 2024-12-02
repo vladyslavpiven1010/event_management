@@ -1,0 +1,26 @@
+@use '/src/environment' as *;
+
+:host {
+  display: block;
+  border-bottom: 1px solid $border-color;
+}
+
+.inner {
+  width: 100%;
+
+  &__buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+
+  &__buttons-button {
+    padding: $padding-tiny $padding-small;
+    display: block;
+    text-align: center;
+  }
+
+  &__buttons-button:hover {
+    background-color: $inactive-color;
+  }
+}

@@ -1,0 +1,32 @@
+<ul class="filters">
+    <li class="fiters__filter filter">
+        <div class="filter__title">
+            <h3 class="filter__title-text">Category</h3>
+        </div>
+        <div class="filter__desc" id="desc2">
+            <input class="filter__desc-check" type="checkbox" id="business" name="business" [(ngModel)]="isBusiness" (change)="changeFilter();">
+            <label for="business">Business</label>
+            <input type="checkbox" id="politics" name="politics" [(ngModel)]="isPolitics" (change)="changeFilter();">
+            <label for="politics">Politics</label>
+            <input type="checkbox" id="psychology" name="psychology" [(ngModel)]="isPsychology" (change)="changeFilter();">
+            <label for="psychology">Psychology</label>
+            <input type="checkbox" id="hobbies" name="hobbies" [(ngModel)]="isHobbies" (change)="changeFilter();">
+            <label for="hobbies">Hobbies</label>
+        </div>
+    </li>
+    <li class="fiters__filter filter">
+        <div class="filter__title">
+            <h3 class="filter__title-text">Format</h3>
+        </div>
+        <div class="filter__desc" id="desc3">
+            <input type="checkbox" id="conference" name="conference" [(ngModel)]="isConference" (change)="changeFilter();">
+            <label for="conference">Conference</label>
+            <input type="checkbox" id="lecture" name="lecture" [(ngModel)]="isLecture" (change)="changeFilter();">
+            <label for="lecture">Lecture</label>
+            <input type="checkbox" id="workshop" name="workshop" [(ngModel)]="isWorkshop" (change)="changeFilter();">
+            <label for="workshop">Workshop</label>
+            <input type="checkbox" id="fest" name="fest" [(ngModel)]="isFest" (change)="changeFilter();">
+            <label for="fest">Fest</label>
+        </div>
+    </li>
+</ul>
