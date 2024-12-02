@@ -3,14 +3,6 @@ import { UpdateUserDto } from 'src/core/services/user/dto';
 
 export class UpdateUserReqApiDto implements UpdateUserDto {
   @IsOptional()
-  @IsInt()
-  role_id: number;
-
-  @IsOptional()
-  @IsInt()
-  company_id: number;
-
-  @IsOptional()
   @IsString()
   username: string;
 
@@ -21,10 +13,6 @@ export class UpdateUserReqApiDto implements UpdateUserDto {
   @IsOptional()
   @IsString()
   email: string;
-
-  @IsOptional()
-  @IsString()
-  password: string;
 
   @IsOptional()
   @IsString()

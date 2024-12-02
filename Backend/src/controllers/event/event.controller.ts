@@ -1,5 +1,5 @@
-import { Body, Controller, Post, Get, Patch, Param, Query, Delete, ParseArrayPipe, UseGuards } from '@nestjs/common';
-import { EventService } from 'src/core/services';
+import { Body, Controller, Post, Get, Patch, Param, Query, Delete, ParseArrayPipe, UseGuards, Req, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { EventService, UserService } from 'src/core/services';
 import { CreateEventReqApiDto } from './dto/create-event.dto';
 import { UpdateEventReqApiDto } from './dto/update-event.dto';
 import { Event } from 'src/core/entities';
@@ -9,7 +9,7 @@ import { RequiredRoles } from '../auth/roles.decorator';
 
 @Controller('event')
 export class EventController {
-    constructor(private eventService: EventService) {}
+    constructor(private eventService: EventService, private userService: UserService) {}
 
     @Get()
     async getEvents(
@@ -30,30 +30,46 @@ export class EventController {
     @Get(':id')
     async getEvent(@Param() params): Promise<any> {
         const event = await this.eventService.findOne(params.id);
+        if (!event) throw new BadRequestException("Event with this credentials does not exist");
+
         return event;
     }
 
     @UseGuards(JwtAuthGuard, RolesGuard)
     @RequiredRoles(ERole.COMPANY_USER, ERole.ADMIN)
     @Post()
-    async createEvent(@Body() eventDto: CreateEventReqApiDto): Promise<any> {
-        const event = await this.eventService.create(eventDto);
+    async createEvent(@Req() request: any, @Body() eventDto: CreateEventReqApiDto): Promise<any> {
+        const event = await this.eventService.create(request.user.sub, eventDto);
         return event;
     }
 
     @UseGuards(JwtAuthGuard, RolesGuard)
     @RequiredRoles(ERole.COMPANY_USER, ERole.ADMIN)
     @Patch(':id')
-    async updateEvent(@Param() params: number, @Body() eventDto: UpdateEventReqApiDto): Promise<any> {
-        const event = await this.eventService.update(params["id"], eventDto);
-        return event;
+    async updateEvent(@Req() request: any, @Param() params: number, @Body() eventDto: UpdateEventReqApiDto): Promise<any> {
+        const event = await this.eventService.findOne(params["id"]);
+
+        console.log(event)
+
+        if (!event) throw new BadRequestException("Event with this credentials does not exist");
+        if (request.user.role !== ERole.ADMIN && event.user_id.id !== request.user.sub) 
+          throw new ForbiddenException('You do not have permission to update this event');
+
+        const updatedEvent = await this.eventService.update(params["id"], eventDto);
+        return updatedEvent;
     }
 
     @UseGuards(JwtAuthGuard, RolesGuard)
     @RequiredRoles(ERole.COMPANY_USER, ERole.ADMIN)
     @Delete(':id')
-    async deleteEvent(@Param() params: number): Promise<any> {
-        const event = await this.eventService.remove(params["id"]);
-        return event;
+    async deleteEvent(@Req() request: any, @Param() params: number): Promise<any> {
+      const event = await this.eventService.findOne(params["id"]);
+
+      if (!event) throw new BadRequestException("Event with this credentials does not exist");
+      if (request.user.role !== ERole.ADMIN && event.user_id.id !== request.user.sub) 
+        throw new ForbiddenException('You do not have permission to delete this event');
+
+      const deletedEvent = await this.eventService.remove(params["id"]);
+      return deletedEvent;
     }
 }

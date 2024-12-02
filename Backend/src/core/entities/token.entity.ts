@@ -18,7 +18,8 @@ export class Token {
   @ManyToOne(() => User, { 
     eager: true,
     onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
+    onUpdate: 'CASCADE',
+    nullable: false
   })
   @JoinColumn({ name: 'user_id' })
   user: User;

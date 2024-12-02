@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Body, Controller, Post, Get, Patch, Param, Delete, UseGuards, Req, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { CompanyService, UserService } from 'src/core/services';
 import { CreateCompanyReqApiDto } from './dto/create-companydto';
 import { UpdateCompanyReqApiDto } from './dto/update-company.dto';
@@ -27,30 +27,65 @@ export class CompanyController {
       return company;
   }
 
+  @RequiredRoles(ERole.USER)
   @Post()
-  async createCompany(@Request() req, @Body() companyDto: CreateCompanyReqApiDto): Promise<any> {
-    const company = await this.companyService.create(req.user.userId, companyDto);
+  async createCompany(@Req() request: any, @Body() companyDto: CreateCompanyReqApiDto): Promise<any> {
+    const company = await this.companyService.create(companyDto);
+    await this.userService.updateToMember(request.user.id, company.id);
+
     return company;
+  }
+
+  @RequiredRoles(ERole.COMPANY_USER, ERole.ADMIN)
+  @Post('invite/:id')
+  async inviteUser(@Req() request: any, @Param() params): Promise<void> {
+    const user = await this.userService.findOneById(request.user.sub);
+    const invited = await this.userService.findOneById(params["id"]);
+
+    if (!invited) throw new BadRequestException("User with this credentials does not exist");
+    
+    return await this.userService.updateToMember(invited.id, user.company_id.id);
   }
 
   @RequiredRoles(ERole.COMPANY_USER, ERole.ADMIN)
   @Patch(':id')
-  async updateCompany(@Param() params: number, @Body() companyDto: UpdateCompanyReqApiDto): Promise<any> {
-      const company = await this.companyService.update(params["id"], companyDto);
-      return company;
+  async updateCompany(@Req() request: any, @Param() params: number, @Body() companyDto: UpdateCompanyReqApiDto): Promise<any> {
+    const user = await this.userService.findOneById(request.user.sub);
+    const company = await this.companyService.findOne(params["id"]);
+
+    if (!company) throw new BadRequestException("Company with this credentials does not exist");
+    if (request.user.role !== ERole.ADMIN && user.company_id.id !== company.id) 
+      throw new ForbiddenException('You do not have permission to update this company');
+    
+    const updatedCompany = await this.companyService.update(params["id"], companyDto);
+    return updatedCompany;
+  }
+
+  @RequiredRoles(ERole.COMPANY_USER, ERole.ADMIN)
+  @Post('kick_out/:id')
+  async kickOutUser(@Req() request: any, @Param() params: any): Promise<void> {
+    const user = await this.userService.findOneById(request.user.sub);
+    const kicked_user = await this.userService.findOneById(params["id"]);
+
+    if (!kicked_user) throw new BadRequestException("User with this credentials does not exist");
+    if (request.user.role !== ERole.ADMIN && user.company_id.id !== kicked_user.company_id.id) 
+      throw new ForbiddenException('You do not have permission to kick out user from this company');
+
+    await this.companyService.kickOutUser(params["id"]);
   }
 
   @RequiredRoles(ERole.COMPANY_USER, ERole.ADMIN)
   @Delete(':id')
-  async deleteOwnCompany(@Param() params: number): Promise<any> {
-    const company = await this.companyService.remove(params["id"]);
-    return company;
-  }
+  async deleteCompany(@Req() request: any, @Param() params: number): Promise<any> {
+    const user = await this.userService.findOneById(request.user.sub);
+    const company = await this.companyService.findOne(params["id"]);
+    
+    if (!company) throw new BadRequestException("Company with this credentials does not exist");
+    if (request.user.role !== ERole.ADMIN && user.company_id.id !== company.id) 
+      throw new ForbiddenException('You do not have permission to update this company');
 
-  @RequiredRoles(ERole.COMPANY_USER, ERole.ADMIN)
-  @Delete('any/:id')
-  async deleteCompany(@Param() params: number): Promise<any> {
-    const company = await this.companyService.remove(params["id"]);
-    return company;
+    await this.companyService.kickOutAllUsers(company.id);
+    const deletedCompany = await this.companyService.remove(params["id"]);
+    return deletedCompany;
   }
 }

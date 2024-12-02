@@ -1,13 +1,17 @@
-import { Body, Controller, Post, Get, UsePipes, ValidationPipe, Patch, Param, Delete, UseGuards } from '@nestjs/common';
-import { TicketService } from 'src/core/services';
+import { Body, Controller, Post, Get, UsePipes, ValidationPipe, Patch, Param, Delete, UseGuards, Req, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { EventService, TicketService } from 'src/core/services';
 import { CreateTicketReqApiDto } from './dto/create-ticket.dto';
 import { UpdateTicketReqApiDto } from './dto/update-ticket.dto';
-import { JwtAuthGuard } from 'src/core/jwt-auth.guard';
+import { ERole, JwtAuthGuard } from 'src/core/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
 
 @Controller('ticket')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class TicketController {
-    constructor(private ticketService: TicketService) {}
+    constructor(
+        private ticketService: TicketService, 
+        private eventService: EventService
+    ) {}
 
     @Get()
     async getTickets(): Promise<any> {
@@ -16,26 +20,52 @@ export class TicketController {
     }
 
     @Get(':id')
-    async getTicket(@Param() params): Promise<any> {
+    async getTicket(@Req() request: any, @Param() params): Promise<any> {
         const ticket = await this.ticketService.findOne(params.id);
+
+        if (!ticket) throw new BadRequestException("Ticket with this credentials does not exist");
+        if (request.user.role !== ERole.ADMIN && ticket.user_id.id !== request.user.sub) 
+            throw new ForbiddenException('You do not have permission to update this ticket');
+        
         return ticket;
     }
 
     @Post()
-    async createTicket(@Body() ticketDto: CreateTicketReqApiDto): Promise<any> {
-        const ticket = await this.ticketService.create(ticketDto);
+    async createTicket(@Req() request: any, @Body() ticketDto: CreateTicketReqApiDto): Promise<any> {
+        const event = await this.eventService.findOne(ticketDto.event_id);
+        const ticketCount = await this.ticketService.getTicketCount(ticketDto.event_id);
+
+        if (!event) throw new BadRequestException("Event with this credentials does not exist");
+        if (ticketCount >= event.ticket_count) throw new BadRequestException('All tickets was sold');
+
+        const ticket = await this.ticketService.create(request.user.sub, ticketDto);
+
         return ticket;
     }
 
     @Patch(':id')
-    async updateTicket(@Param() params: number, @Body() ticketDto: UpdateTicketReqApiDto): Promise<any> {
-        const ticket = await this.ticketService.update(params["id"], ticketDto);
-        return ticket;
+    async updateTicket(@Req() request: any, @Param() params: number, @Body() ticketDto: UpdateTicketReqApiDto): Promise<any> {
+        const ticket = await this.ticketService.findOne(params["id"]);
+        const event = await this.eventService.findOne(ticketDto.event_id);
+
+        if (!ticket) throw new BadRequestException("Ticket with this credentials does not exist");
+        if (!event) throw new BadRequestException("Event with this id does not exist");
+        if (request.user.role !== ERole.ADMIN && ticket.user_id.id !== request.user.sub) 
+            throw new ForbiddenException('You do not have permission to update this ticket');
+
+        const updatedTicket = await this.ticketService.update(params["id"], ticketDto);
+        return updatedTicket;
     }
 
     @Delete(':id')
-    async deleteTicket(@Param() params: number): Promise<any> {
-        const ticket = await this.ticketService.remove(params["id"]);
-        return ticket;
+    async deleteTicket(@Req() request: any, @Param() params: number): Promise<any> {
+        const ticket = await this.ticketService.findOne(params["id"]);
+
+        if (!ticket) throw new BadRequestException("Ticket with this credentials does not exist");
+        if (request.user.role !== ERole.ADMIN && ticket.user_id.id !== request.user.sub) 
+            throw new ForbiddenException('You do not have permission to delete this ticket');
+
+        const deletedTicket = await this.ticketService.remove(params["id"]);
+        return deletedTicket;
     }
 }

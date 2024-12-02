@@ -13,7 +13,8 @@ export class VerificationCode {
   @ManyToOne((type) => User, (user) => user.id, {
     cascade: true,
     onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
+    onUpdate: 'CASCADE',
+    nullable: false
   })
   @JoinColumn({ name: 'user_id' })
   user_id: User[];

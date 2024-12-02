@@ -36,6 +36,3 @@ export class AuthController {
     return this.authService.logout(refreshToken);
   }
 }
-
-// "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjMsImVtYWlsIjoiZXhhbXBsZTNAZ21haWwuY29tIiwicm9sZSI6MSwiaWF0IjoxNzMxNDkwODE0LCJleHAiOjE3MzE0OTE3MTR9.88QNPm_kdCCx1hr1XnHwf8tEGQORqTwReudVX_7cC5c",
-// "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjMsImVtYWlsIjoiZXhhbXBsZTNAZ21haWwuY29tIiwicm9sZSI6MSwiaWF0IjoxNzMxNDkwODE0LCJleHAiOjE3MzIwOTU2MTR9.pu1PFMZXmQdwwbJHDg34JAu0ts-1bzBP6t-xGGwHJlc"

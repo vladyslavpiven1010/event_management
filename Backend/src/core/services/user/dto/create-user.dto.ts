@@ -1,5 +1,4 @@
 export interface CreateUserDto {
-  role_id: number;
   company_id?: number;
   username: string;
   name: string;

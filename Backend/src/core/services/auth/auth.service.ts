@@ -16,6 +16,7 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.userService.findOneByEmail(email);
+    
     if (user && await bcrypt.compare(password, user.password)) {
       const { password, ...result } = user;
       return result;
@@ -35,8 +36,7 @@ export class AuthService {
       name: user.name,
       username: user.username,
       email: user.email,
-      password: hashedPassword,
-      role_id: 1
+      password: hashedPassword
     });
 
     return newUser;
@@ -62,7 +62,7 @@ export class AuthService {
       const payload = this.jwtService.verify(oldRefreshToken, { secret: 'sdfsdf' });
       const user = await this.userService.findOneById(payload.sub);
 
-      const newAccessToken = this.jwtService.sign({ sub: user.id, email: user.email, role: user.role_id.id }, { expiresIn: '15m' });
+      const newAccessToken = this.jwtService.sign({ sub: user.id, email: user.email, role: user.role_id.name }, { expiresIn: '15m' });
       return newAccessToken;
     } catch (err) {
       throw new UnauthorizedException('Invalid refresh token');

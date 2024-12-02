@@ -17,7 +17,8 @@ export class User {
   @ManyToOne((type) => Role, (role) => role.id, {
     cascade: true,
     onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
+    onUpdate: 'CASCADE',
+    nullable: false
   })
   @JoinColumn({ name: 'role_id' })
   role_id: Role;

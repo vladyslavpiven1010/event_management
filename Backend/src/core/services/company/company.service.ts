@@ -10,7 +10,7 @@ export class CompanyService {
   private companyRepository;
   private userRepository;
 
-  constructor(private dataSource: DataSource, private usersService: UserService) {
+  constructor(private dataSource: DataSource, private userService: UserService) {
     this.companyRepository = this.dataSource.getRepository(Company);
     this.userRepository = this.dataSource.getRepository(User);
   }
@@ -23,22 +23,15 @@ export class CompanyService {
     return this.companyRepository.findOneBy({ id });
   }
 
-  async create(userId: number, company: CreateCompanyDto): Promise<Company> {
-    const user = await this.usersService.findOneById(company.user_id);
-    console.log(user)
-    if (user.role_id.name !== ERole.USER) {
-      throw new ForbiddenException('Only users with role "user" can create a company');
-    }
-
+  async create(company: CreateCompanyDto): Promise<Company> {
     const newC = {
       ...company,
       created_at: new Date(),
       deleted_at: null
     }
     
-    const newCompany = this.companyRepository.create({ newC });
-    await this.usersService.updateRole(userId, ERole.COMPANY_USER);
-    await this.companyRepository.save(company);
+    const newCompany: Company = this.companyRepository.create(newC);
+    await this.companyRepository.save(newCompany);
     
     return newCompany;
   }
@@ -46,6 +39,18 @@ export class CompanyService {
   async update(id: number, company: UpdateCompanyDto): Promise<void> {
     await this.companyRepository.update(id, company);
     return this.companyRepository.findOneBy({ id });
+  }
+
+  async kickOutUser(userId: number): Promise<void> {
+    await this.userService.updateToUserRole(userId);
+  }
+
+  async kickOutAllUsers(company_id: number): Promise<void> {
+    const members: User[] = await this.userService.findCompanyMembers(company_id);
+
+    members.map(member => {
+      return this.kickOutUser(member.id);
+    })
   }
 
   async remove(id: number): Promise<void> {

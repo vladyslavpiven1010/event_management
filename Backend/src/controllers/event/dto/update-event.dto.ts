@@ -1,10 +1,7 @@
 import { UpdateEventDto } from 'src/core/services/event/dtos';
-import { IsInt, IsOptional, MaxLength, MinLength, IsDate } from 'class-validator';
+import { IsInt, IsOptional, MaxLength, MinLength } from 'class-validator';
 
 export class UpdateEventReqApiDto implements UpdateEventDto {
-  @IsInt()
-  user_id: number;
-
   @IsOptional()
   @IsInt()
   category_id: number;
@@ -20,26 +17,22 @@ export class UpdateEventReqApiDto implements UpdateEventDto {
 
   @IsOptional()
   @IsInt()
-  ticket_count: number;
+  ticket_count?: number;
 
   @IsOptional()
   @IsInt()
-  ticket_price: number;
+  ticket_price?: number;
 
+  @IsOptional()
   @IsInt()
-  lat: number;
+  lat?: number;
 
+  @IsOptional()
   @IsInt()
-  lng: number;
-
-  @IsDate()
-  created_at: Date;
-
-  @IsDate()
-  deleted_at: Date;
+  lng?: number;
 
   @IsOptional()
   @MinLength(1)
   @MaxLength(256)
-  date: Date;
+  date?: Date;
 }
