@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UnauthorizedException, UseGuards, ConflictException } from '@nestjs/common';
 import { AuthService } from 'src/core/services';
 import { LoginUserDto, RegisterUserDto } from './dto';
 import { JwtAuthGuard } from 'src/core/jwt-auth.guard';
@@ -16,8 +16,14 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() registerUserDto: RegisterUserDto) {
-    return this.authService.register(registerUserDto);
+    try {
+      return await this.authService.register(registerUserDto);
+    } catch (error) {
+      console.error('Error during registration:', error.message, error.stack);
+      throw error;
+    }
   }
+  
 
   @UseGuards(JwtAuthGuard)
   @Post('refresh')
