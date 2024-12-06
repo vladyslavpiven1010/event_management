@@ -7,7 +7,7 @@ import { RequiredRoles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 
 @Controller('category')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 export class CategoryController {
     constructor(private categoryService: CategoryService) {}
 
@@ -17,6 +17,7 @@ export class CategoryController {
         return category;
     }
 
+    @UseGuards(JwtAuthGuard)
     @Get(':id')
     async getCategory(@Param() params): Promise<any> {
         const category = await this.categoryService.findOne(params.id);
@@ -25,6 +26,7 @@ export class CategoryController {
         return category;
     }
 
+    @UseGuards(JwtAuthGuard)
     @RequiredRoles(ERole.ADMIN)
     @Post()
     async createCategory(@Body() categoryDto: CreateCategoryReqApiDto): Promise<any> {
@@ -32,6 +34,7 @@ export class CategoryController {
         return category;
     }
 
+    @UseGuards(JwtAuthGuard)
     @RequiredRoles(ERole.ADMIN)
     @Patch(':id')
     async updateCategory(@Param() params, @Body() categoryDto: UpdateCategoryReqApiDto): Promise<any> {
@@ -42,6 +45,7 @@ export class CategoryController {
         return deletedCategory;
     }
 
+    @UseGuards(JwtAuthGuard)
     @RequiredRoles(ERole.ADMIN)
     @Delete(':id')
     async deleteCategory(@Param() params): Promise<any> {
