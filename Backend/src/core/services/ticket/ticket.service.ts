@@ -1,5 +1,5 @@
 import { Event, Ticket } from 'src/core/entities';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { CreateTicketDto, UpdateTicketDto } from './dtos';
 
@@ -21,6 +21,17 @@ export class TicketService {
       .createQueryBuilder('ticket')
       .innerJoinAndSelect("ticket.event_id", "event")
       .innerJoinAndSelect("ticket.user_id", "user")
+      .getMany();
+  }
+
+  findAllByUser(
+    userId: number
+  ): Promise<Ticket[]> {
+    return this.ticketRepository
+      .createQueryBuilder('ticket')
+      .innerJoinAndSelect("ticket.event_id", "event")
+      .innerJoinAndSelect("ticket.user_id", "user")
+      .andWhere("ticket.user_id = :id", {id: userId})
       .getMany();
   }
 

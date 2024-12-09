@@ -19,6 +19,12 @@ export class TicketController {
         return ticket;
     }
 
+    @Get('all_own')
+    async getAllTicketsOfUser(@Req() request: any): Promise<any> {
+        const ticket = await this.ticketService.findAllByUser(request.user.sub);
+        return ticket;
+    }
+
     @Get(':id')
     async getTicket(@Req() request: any, @Param() params): Promise<any> {
         const ticket = await this.ticketService.findOne(params.id);
