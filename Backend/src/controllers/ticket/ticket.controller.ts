@@ -56,7 +56,7 @@ export class TicketController {
 
         if (!ticket) throw new BadRequestException("Ticket with this credentials does not exist");
         if (!event) throw new BadRequestException("Event with this id does not exist");
-        if (request.user.role !== ERole.ADMIN && ticket.user_id.id !== request.user.sub) 
+        if (request.user.role !== ERole.ADMIN)
             throw new ForbiddenException('You do not have permission to update this ticket');
 
         const updatedTicket = await this.ticketService.update(params["id"], ticketDto);

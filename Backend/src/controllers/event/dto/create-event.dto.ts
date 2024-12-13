@@ -31,13 +31,12 @@ export class CreateEventReqApiDto implements CreateEventDto {
 
   @IsOptional()
   @IsDate()
-  created_at: Date;
+  created_at?: Date;
 
   @IsOptional()
   @IsDate()
-  deleted_at: Date;
+  deleted_at?: Date;
 
-  @IsOptional()
   @IsDate()
   date: Date;
 }
