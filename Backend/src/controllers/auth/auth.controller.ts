@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UnauthorizedException, UseGuards, ConflictException } from '@nestjs/common';
+import { Controller, Post, Body, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { AuthService } from 'src/core/services';
 import { LoginUserDto, RegisterUserDto } from './dto';
 import { JwtAuthGuard } from 'src/core/jwt-auth.guard';
@@ -24,7 +24,6 @@ export class AuthController {
     }
   }
   
-
   @UseGuards(JwtAuthGuard)
   @Post('refresh')
   async refresh(@Body('refreshToken') refreshToken: string) {

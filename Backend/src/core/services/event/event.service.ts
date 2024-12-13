@@ -32,6 +32,28 @@ export class EventService {
       .getMany();
   }
 
+  findAllByUser(
+    userId: number
+  ): Promise<Event[]> {
+    const query = this.eventRepository.createQueryBuilder('event');
+
+    return query
+      .innerJoinAndSelect("event.category_id", "category")
+      .innerJoinAndSelect("event.user_id", "user")
+      .andWhere("event.user_id = :id", {id: userId})
+      .getMany();
+  }
+
+  async findAllByCompany(companyId: number): Promise<Event[]> {
+    const query = this.eventRepository.createQueryBuilder('event');
+  
+    return query
+      .innerJoinAndSelect('event.user_id', 'user')
+      .innerJoinAndSelect('event.category_id', 'category')
+      .where('user.company_id = :companyId', { companyId })
+      .getMany();
+  }
+
   findOne(id: number): Promise<Event | null> {
     return this.eventRepository.createQueryBuilder('event')
     .innerJoinAndSelect("event.category_id", "category")

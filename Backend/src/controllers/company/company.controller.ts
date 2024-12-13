@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Get, Patch, Param, Delete, UseGuards, Req, ForbiddenException, BadRequestException } from '@nestjs/common';
-import { CompanyService, UserService } from 'src/core/services';
+import { CompanyService, EventService, UserService } from 'src/core/services';
 import { CreateCompanyReqApiDto } from './dto/create-companydto';
 import { UpdateCompanyReqApiDto } from './dto/update-company.dto';
 import { JwtAuthGuard, ERole } from 'src/core/jwt-auth.guard';
@@ -11,13 +11,29 @@ import { RolesGuard } from '../auth/roles.guard';
 export class CompanyController {
   constructor(
     private companyService: CompanyService, 
-    private userService: UserService) 
+    private userService: UserService,
+    private eventService: EventService)
     {}
 
   @Get()
   async getCompanies(): Promise<any> {
       const company = await this.companyService.findAll();
       return company;
+  }
+
+  @RequiredRoles(ERole.COMPANY_USER, ERole.ADMIN)
+  @Get('members')
+  async getAllTicketsOfUser(@Req() request: any): Promise<any> {
+      const user = await this.userService.findOneById(request.user.sub);
+      const members = await this.userService.findCompanyMembers(user.company_id.id);
+      return members;
+  }
+
+  @Get('all_own_events')
+  async getAllEventsOfCompany(@Req() request: any): Promise<any> {
+    const user = await this.userService.findOneById(request.user.sub);
+      const event = await this.eventService.findAllByCompany(user.company_id.id);
+      return event;
   }
 
   @RequiredRoles(ERole.COMPANY_USER, ERole.ADMIN)

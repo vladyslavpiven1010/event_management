@@ -19,6 +19,12 @@ export class TicketController {
         return ticket;
     }
 
+    @Get('all_own')
+    async getAllTicketsOfUser(@Req() request: any): Promise<any> {
+        const ticket = await this.ticketService.findAllByUser(request.user.sub);
+        return ticket;
+    }
+
     @Get(':id')
     async getTicket(@Req() request: any, @Param() params): Promise<any> {
         const ticket = await this.ticketService.findOne(params.id);
@@ -50,7 +56,7 @@ export class TicketController {
 
         if (!ticket) throw new BadRequestException("Ticket with this credentials does not exist");
         if (!event) throw new BadRequestException("Event with this id does not exist");
-        if (request.user.role !== ERole.ADMIN && ticket.user_id.id !== request.user.sub) 
+        if (request.user.role !== ERole.ADMIN)
             throw new ForbiddenException('You do not have permission to update this ticket');
 
         const updatedTicket = await this.ticketService.update(params["id"], ticketDto);

@@ -10,7 +10,7 @@ export const DatabaseProvider = [
                 port: 5432,
                 username: 'postgres',
                 password: 'postgres',
-                database: 'event_management',
+                database: 'Event_Management_System',
                 entities: [
                     __dirname + '../entities/*.entity.ts',
                 ],

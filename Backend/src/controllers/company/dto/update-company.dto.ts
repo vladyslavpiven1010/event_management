@@ -17,12 +17,4 @@ export class UpdateCompanyReqApiDto implements UpdateCompanyDto {
   @IsOptional()
   @IsBoolean()
   is_verified: boolean;
-
-  @IsOptional()
-  @IsDate()
-  created_at: Date;
-
-  @IsOptional()
-  @IsDate()
-  deleted_at: Date;
 }

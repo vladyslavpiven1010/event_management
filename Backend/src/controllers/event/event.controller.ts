@@ -9,7 +9,7 @@ import { RequiredRoles } from '../auth/roles.decorator';
 
 @Controller('event')
 export class EventController {
-    constructor(private eventService: EventService, private userService: UserService) {}
+    constructor(private eventService: EventService) {}
 
     @Get()
     async getEvents(
@@ -25,6 +25,13 @@ export class EventController {
             filterByCategory ? filterByCategory.split(',').map(Number) : [],
             filterByTicketPrice ? filterByTicketPrice.split(',').map(Number) : []
         );
+        return event;
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('all_own')
+    async getAllEventsOfUser(@Req() request: any): Promise<any> {
+        const event = await this.eventService.findAllByUser(request.user.sub);
         return event;
     }
 
