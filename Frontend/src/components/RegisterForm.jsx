@@ -19,7 +19,7 @@ const RegisterForm = () => {
 
     try {
       const response = await axios.post("http://localhost:5001/auth/register", {
-        name, 
+        name,
         username,
         email,
         password,
@@ -28,7 +28,7 @@ const RegisterForm = () => {
       // Handle success
       setSuccess(true);
       console.log("Registration successful:", response.data);
-      navigate("/")
+      navigate("/login");
     } catch (err) {
       // Handle errors
       console.error("Registration failed:", err);
@@ -38,7 +38,7 @@ const RegisterForm = () => {
 
   return (
     <div className="login-container">
-      <form className="login-form">
+      <form className="login-form" onSubmit={handleSubmit}>
         <h1>Register</h1>
         {error && <p className="error-message">{error}</p>}
         {success && <p className="success-message">Registration successful! Please log in.</p>}
@@ -91,7 +91,7 @@ const RegisterForm = () => {
           />
           <label htmlFor="showPassword">Show password</label>
         </div>
-        <button type="submit" className="btn btn-primary" onClick={handleSubmit}>
+        <button type="submit" className="btn btn-primary">
           Register
         </button>
         <p>

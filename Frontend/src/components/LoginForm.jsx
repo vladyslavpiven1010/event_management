@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import axios from "axios";
+import Cookies from "js-cookie";
 import { useAuth } from "../context/AuthContext";
 import "./../styles/Auth.css";
 
@@ -11,19 +12,23 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     try {
       const response = await axios.post("http://localhost:5001/auth/login", {
         email,
         password,
       });
-  
-      localStorage.setItem("token", response.data.accessToken); // Store token
-      console.log("Token stored:", response.data.accessToken); // Debugging
+
+      const token = response.data.accessToken;
+
+      // Store token in cookies
+      Cookies.set("token", token, { secure: true, sameSite: "Strict" });
+
+      console.log("Token stored in cookies:", token); // Debugging
       setIsLoggedIn(true); // Update logged-in state
       navigate("/");
     } catch (err) {
@@ -31,7 +36,6 @@ const LoginForm = () => {
       setError(err.response?.data?.message || "Something went wrong");
     }
   };
-  
 
   return (
     <div className="login-container">
