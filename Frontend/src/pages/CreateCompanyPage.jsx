@@ -1,0 +1,109 @@
+import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
+import "./../styles/Auth.css";
+
+const CreateCompanyForm = () => {
+  const location = useLocation();
+  const token = location.state?.token || ""; // Retrieve token passed from ProfilePage
+  console.log(token)
+
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    country_code: "",
+  });
+
+  const [formError, setFormError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!formData.name || !formData.description || !formData.country_code) {
+      setFormError("All fields are required!");
+      return;
+    }
+
+    try {
+      setFormError("");
+      setSuccessMessage("");
+      // API request
+      const response = await axios.post(
+        "http://localhost:5001/company",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include token
+          },
+        }
+      );
+
+      setSuccessMessage("Company created successfully!");
+      navigate(`/company/${response.data.id}`)
+      console.log("Company Created:", response.data);
+    } catch (error) {
+      console.error("Error creating company:", error);
+      setFormError(
+        error.response?.data?.message || "An error occurred. Please try again."
+      );
+    }
+  };
+
+  return (
+    <div className="login-container">
+      <form onSubmit={handleSubmit} className="login-form">
+        {formError && <p className="form-error">{formError}</p>}
+        {successMessage && <p className="form-success">{successMessage}</p>}
+        <h1>Create a Company</h1>
+        <div className="form-group">
+          <label htmlFor="name">Name:</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Enter company name"
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="description">Description:</label>
+          <textarea
+            id="description"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            placeholder="Enter company description"
+          ></textarea>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="country_code">Country Code:</label>
+          <input
+            type="text"
+            id="country_code"
+            name="country_code"
+            value={formData.country_code}
+            onChange={handleChange}
+            placeholder="Enter country code (e.g., US)"
+          />
+        </div>
+
+        <button type="submit" className="btn btn-primary">
+          Create Company
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default CreateCompanyForm;

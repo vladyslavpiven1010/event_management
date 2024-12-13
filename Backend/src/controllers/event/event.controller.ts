@@ -18,6 +18,7 @@ export class EventController {
         @Query('filterByCategory') filterByCategory?: string,
         @Query('filterByTicketPrice') filterByTicketPrice?: string
     ): Promise<any> {
+        console.log(sortBy, sortOrder, filterByCategory, filterByTicketPrice)
         const event = await this.eventService.findAll(
             sortBy || 'event_date',
             sortOrder,
