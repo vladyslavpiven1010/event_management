@@ -47,7 +47,7 @@ export class CompanyController {
   @Post()
   async createCompany(@Req() request: any, @Body() companyDto: CreateCompanyReqApiDto): Promise<any> {
     const company = await this.companyService.create(companyDto);
-    await this.userService.updateToMember(request.user.id, company.id);
+    await this.userService.updateToMember(request.user.sub, company.id);
 
     return company;
   }

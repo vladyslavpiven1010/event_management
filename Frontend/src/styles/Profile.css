@@ -132,3 +132,24 @@
   font-size: 14px;
   color: #666;
 }
+
+.tickets-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ticket-item {
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+}
+
+.ticket-column {
+  flex: 1;
+  text-align: center;
+  font-weight: bold;
+}

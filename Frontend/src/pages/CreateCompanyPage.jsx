@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./../styles/Auth.css";
+import Cookies from "js-cookie";
 
 const CreateCompanyForm = () => {
   const location = useLocation();
   const token = location.state?.token || ""; // Retrieve token passed from ProfilePage
-  console.log(token)
-
+  
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -47,6 +47,7 @@ const CreateCompanyForm = () => {
       );
 
       setSuccessMessage("Company created successfully!");
+      await handleRefreshToken()
       navigate(`/company/${response.data.id}`)
       console.log("Company Created:", response.data);
     } catch (error) {
@@ -54,6 +55,20 @@ const CreateCompanyForm = () => {
       setFormError(
         error.response?.data?.message || "An error occurred. Please try again."
       );
+    }
+  };
+
+  const handleRefreshToken = async () => {
+    try {
+      const refreshToken = Cookies.get("token");
+      console.log(refreshToken)
+      const response = await axios.post("http://localhost:5001/auth/refresh", {
+        refreshToken,
+      });
+      Cookies.set("token", response.data.accessToken);
+    } catch (err) {
+      console.error("Error refreshing token:", err.message);
+      setFormError("Session expired. Please log in again.");
     }
   };
 

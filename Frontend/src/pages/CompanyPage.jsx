@@ -19,7 +19,6 @@ const CompanyProfile = () => {
     const fetchCompanyData = async () => {
       try {
         const token = Cookies.get("token");
-        console.log(token)
         const response = await axios.get(`http://localhost:5001/company/${companyId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -29,7 +28,6 @@ const CompanyProfile = () => {
         setCompanyData(response.data);
       } catch (err) {
         if (err.response && err.response.status === 401) {
-          await handleRefreshToken();
           fetchCompanyData(); // Retry fetching data after refreshing the token
         } else {
           console.error("Error loading company data:", err.message);
@@ -42,19 +40,6 @@ const CompanyProfile = () => {
 
     fetchCompanyData();
   }, [companyId]);
-
-  const handleRefreshToken = async () => {
-    try {
-      const refreshToken = Cookies.get("refreshToken");
-      const response = await axios.post("http://localhost:5001/auth/refresh", {
-        refreshToken,
-      });
-      Cookies.set("token", response.data.accessToken);
-    } catch (err) {
-      console.error("Error refreshing token:", err.message);
-      setError("Session expired. Please log in again.");
-    }
-  };
 
   const renderTabContent = () => {
     if (activeTab === "About") {
