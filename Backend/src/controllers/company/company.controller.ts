@@ -5,11 +5,13 @@ import { UpdateCompanyReqApiDto } from './dto/update-company.dto';
 import { JwtAuthGuard, ERole } from 'src/core/jwt-auth.guard';
 import { RequiredRoles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
+import { AuthService } from 'src/core/services';
 
 @Controller('company')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class CompanyController {
   constructor(
+    private authService: AuthService,
     private companyService: CompanyService, 
     private userService: UserService,
     private eventService: EventService)
@@ -23,7 +25,7 @@ export class CompanyController {
 
   @RequiredRoles(ERole.COMPANY_USER, ERole.ADMIN)
   @Get('members')
-  async getAllTicketsOfUser(@Req() request: any): Promise<any> {
+  async getAllCompanyMembers(@Req() request: any): Promise<any> {
       const user = await this.userService.findOneById(request.user.sub);
       const members = await this.userService.findCompanyMembers(user.company_id.id);
       return members;
@@ -49,7 +51,14 @@ export class CompanyController {
     const company = await this.companyService.create(companyDto);
     await this.userService.updateToMember(request.user.sub, company.id);
 
-    return company;
+    const user = await this.userService.findOneById(request.user.sub);
+    const newAccessToken =  await this.authService.generateAccessToken(user);
+    console.log(newAccessToken)
+
+    return {
+      company,
+      accessToken: newAccessToken, // Return the updated token
+  };
   }
 
   @RequiredRoles(ERole.COMPANY_USER, ERole.ADMIN)

@@ -19,7 +19,7 @@
 
 .profile-info {
   position: absolute;
-  bottom: -60px;
+  bottom: -5px;
   left: 50%;
   transform: translateX(-300%);
   text-align: center;
@@ -30,18 +30,26 @@
   height: 120px;
   border-radius: 50%;
   border: 4px solid white;
-  margin-bottom: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .profile-info h2 {
-  margin: 10px 0;
+  margin: 20px 0;
   font-size: 24px;
   color: #333;
 }
 
 .profile-info p {
   font-size: 14px;
+  color: #666;
+}
+
+.user-credentials {
+  display: block;
+  justify-content: center;
+  margin-top: 10px;
+  position: absolute;
+  right: 835px;
   color: #666;
 }
 
@@ -107,7 +115,7 @@
 .profile-details {
   display: flex;
   justify-content: space-around;
-  /* flex-wrap: wrap; */
+  flex-wrap: wrap;
   padding: 20px;
   margin-top: 10px;
   background-color: #f9f9f9;

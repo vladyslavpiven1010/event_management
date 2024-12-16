@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsDate, IsString } from 'class-validator';
+import { IsOptional, IsDate, IsString } from 'class-validator';
 import { UpdateUserDto } from 'src/core/services/user/dto';
 
 export class UpdateUserReqApiDto implements UpdateUserDto {

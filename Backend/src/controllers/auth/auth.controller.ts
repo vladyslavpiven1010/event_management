@@ -26,9 +26,9 @@ export class AuthController {
   
   @UseGuards(JwtAuthGuard)
   @Post('refresh')
-  async refresh(@Body('refreshToken') refreshToken: string) {
+  async refresh(@Body('accessToken') accessToken: string) {
     try {
-      const newAccessToken = await this.authService.refreshToken(refreshToken);
+      const newAccessToken = await this.authService.refreshToken(accessToken);
       return { accessToken: newAccessToken };
     } catch (error) {
       throw new UnauthorizedException('Invalid refresh token');

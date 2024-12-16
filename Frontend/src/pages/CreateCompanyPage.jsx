@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./../styles/Auth.css";
 import Cookies from "js-cookie";
+import {jwtDecode} from "jwt-decode";
 
 const CreateCompanyForm = () => {
   const location = useLocation();
@@ -45,11 +46,21 @@ const CreateCompanyForm = () => {
           },
         }
       );
-
+      
+      // Update token with the new one from the response
+      Cookies.set("token", response.data.accessToken);
       setSuccessMessage("Company created successfully!");
-      await handleRefreshToken()
-      navigate(`/company/${response.data.id}`)
+      
+      const userToken = Cookies.get("token");
+      console.log("User Token: ", userToken)
+
+      const decodedToken = jwtDecode(userToken);
+      const userId = decodedToken?.sub;
+      console.log("User Sub:", userId)
+
+      navigate(`/profile/${userId}`)
       console.log("Company Created:", response.data);
+
     } catch (error) {
       console.error("Error creating company:", error);
       setFormError(
@@ -58,19 +69,23 @@ const CreateCompanyForm = () => {
     }
   };
 
-  const handleRefreshToken = async () => {
-    try {
-      const refreshToken = Cookies.get("token");
-      console.log(refreshToken)
-      const response = await axios.post("http://localhost:5001/auth/refresh", {
-        refreshToken,
-      });
-      Cookies.set("token", response.data.accessToken);
-    } catch (err) {
-      console.error("Error refreshing token:", err.message);
-      setFormError("Session expired. Please log in again.");
-    }
-  };
+  // const handleRefreshToken = async () => {
+  //   try {
+  //     const accessToken = Cookies.get("token");
+  //     console.log("Access token:", accessToken)
+
+  //     const response = await axios.post("http://localhost:5001/auth/refresh", {
+  //       headers: {
+  //         Authorization: `Bearer ${accessToken}`,
+  //       },
+  //     });
+  //     Cookies.set("token", response.data.accessToken);
+  //     console.log("Refresh token:", response.data.accessToken)
+  //   } catch (err) {
+  //     console.error("Error refreshing token:", err.message);
+  //     setFormError("Session expired. Please log in again.");
+  //   }
+  // };
 
   return (
     <div className="login-container">

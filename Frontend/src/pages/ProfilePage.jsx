@@ -186,13 +186,6 @@ const ProfilePage = () => {
     }
   };
   
-  const handleCompanyName = (userData) => {
-    if (!userData || !userData.company_id || !userData.company_id.name) {
-      return "Not provided";
-    }
-    return userData.company_id.name.trim() || "Not provided";
-  };
-  
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
@@ -209,11 +202,25 @@ const ProfilePage = () => {
             alt="Avatar"
           />
           <h2>{userData.name || "John Doe"}</h2>
-          <p>Birth date: {userData.birthDate || "Not provided"}</p>
-          <p>Company name: {handleCompanyName(userData)}</p>
         </div>
         <div className="settings-icon">
           <a href="/settings">⚙</a>
+        </div>
+        <div className="user-credentials">
+          <p>Birth date: {userData.birthDate || "Not provided"}</p>
+          <p>
+            Company name:{" "}
+            {userData?.company_id?.name ? (
+              <span
+                style={{cursor: "pointer", textDecoration: "underline" }}
+                onClick={() => navigate(`/company/${userData.company_id.id}`)}
+              >
+                {userData.company_id.name}
+              </span>
+            ) : (
+              "Not provided"
+            )}
+          </p>
         </div>
       </div>
       <div className="profile-navigation">
