@@ -1,5 +1,5 @@
 import { CreateEventDto } from 'src/core/services/event/dtos';
-import { IsInt, IsOptional, MaxLength, MinLength, IsDate} from 'class-validator';
+import { IsInt, IsNumber, IsOptional, MaxLength, MinLength, IsDate} from 'class-validator';
 
 export class CreateEventReqApiDto implements CreateEventDto {
   @IsInt()
@@ -22,11 +22,11 @@ export class CreateEventReqApiDto implements CreateEventDto {
   ticket_price: number;
 
   @IsOptional()
-  @IsInt()
+  @IsNumber()
   lat: number;
 
   @IsOptional()
-  @IsInt()
+  @IsNumber()
   lng: number;
 
   @IsOptional()
