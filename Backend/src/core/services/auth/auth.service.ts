@@ -52,14 +52,14 @@ export class AuthService {
     return {accessToken, refreshToken};
   }
 
-  async refreshToken(oldRefreshToken: string): Promise<string> {
-    const tokenEntity = await this.tokenService.findByRefreshToken(oldRefreshToken);
+  async refreshToken(oldAccessToken: string): Promise<string> {
+    const tokenEntity = await this.tokenService.findByAccessToken(oldAccessToken);
     if (!tokenEntity || !tokenEntity.is_valid) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
     try {
-      const payload = this.jwtService.verify(oldRefreshToken, { secret: 'sdfsdf' });
+      const payload = this.jwtService.verify(oldAccessToken, { secret: 'sdfsdf' });
       const user = await this.userService.findOneById(payload.sub);
 
       const newAccessToken = this.jwtService.sign({ sub: user.id, email: user.email, role: user.role_id.name }, { expiresIn: '15m' });

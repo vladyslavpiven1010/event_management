@@ -92,6 +92,7 @@ export class UserService {
     const user: User = await this.userRepository.findOneBy({ id });
     user.role_id = await this.roleRepository.findOneBy({name: ERole.COMPANY_USER});
     user.company_id = await this.companyRepository.findOneBy({id: company_id});
+    console.log(user)
 
     await this.userRepository.update(user.id, user);
     await this.userRepository.save(user);

@@ -23,7 +23,7 @@ export class CompanyController {
 
   @RequiredRoles(ERole.COMPANY_USER, ERole.ADMIN)
   @Get('members')
-  async getAllTicketsOfUser(@Req() request: any): Promise<any> {
+  async getAllCompanyMembers(@Req() request: any): Promise<any> {
       const user = await this.userService.findOneById(request.user.sub);
       const members = await this.userService.findCompanyMembers(user.company_id.id);
       return members;

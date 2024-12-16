@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, UsePipes, ValidationPipe, Patch, Param, Delete, UseGuards, Req, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Body, Controller, Post, Get, Patch, Param, Delete, UseGuards, Req, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { EventService, TicketService } from 'src/core/services';
 import { CreateTicketReqApiDto } from './dto/create-ticket.dto';
 import { UpdateTicketReqApiDto } from './dto/update-ticket.dto';

@@ -1,5 +1,5 @@
-import { Body, Controller, Post, Get, Patch, Param, Query, Delete, ParseArrayPipe, UseGuards, Req, ForbiddenException, BadRequestException } from '@nestjs/common';
-import { EventService, UserService } from 'src/core/services';
+import { Body, Controller, Post, Get, Patch, Param, Query, Delete, UseGuards, Req, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { EventService } from 'src/core/services';
 import { CreateEventReqApiDto } from './dto/create-event.dto';
 import { UpdateEventReqApiDto } from './dto/update-event.dto';
 import { Event } from 'src/core/entities';
