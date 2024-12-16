@@ -89,8 +89,9 @@ export class UserService {
   }
 
   async updateToMember(id: number, company_id: number) {
-    const user: User = await this.userRepository.findOneBy({ id });
+    const user: User = await this.findOneById(id);
     user.role_id = await this.roleRepository.findOneBy({name: ERole.COMPANY_USER});
+    console.log(user.role_id)
     user.company_id = await this.companyRepository.findOneBy({id: company_id});
     console.log(user)
 

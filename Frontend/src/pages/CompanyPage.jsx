@@ -4,9 +4,11 @@ import "./../styles/Profile.css";
 import bannerImage from './../assets/banner.jpg';
 import profileImage from './../assets/defaultAvatar.png';
 
+import axios from "axios";
 import Cookies from "js-cookie";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import Modal from './Modal'
 
 const CompanyProfile = () => {
   const { companyId } = useParams(); // Get the company ID from the URL
@@ -14,6 +16,25 @@ const CompanyProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("About"); // State for active tab
+
+  const [userEvents, setUserEvents] = useState([]); // State to store user events
+  const [userMemebers, setUsermembers] = useState([]); // Tickets state
+  const [eventsLoading, setEventsLoading] = useState(false); // Loading state for events
+  const [memberLoading, setMemberLoading] = useState(false); // Ticket loading state
+
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [newEvent, setNewEvent] = useState({
+    name: "",
+    description: "",
+    category_id: 0,
+    ticket_count: 0,
+    ticket_price: 0,
+    lat: 0,
+    lng: 0,
+    date: ""
+  })
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCompanyData = async () => {
@@ -25,16 +46,10 @@ const CompanyProfile = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        console.log(response)
         setCompanyData(response.data);
       } catch (err) {
-        if (err.response && err.response.status === 401) {
-          await handleRefreshToken();
-          fetchCompanyData(); // Retry fetching data after refreshing the token
-        } else {
-          console.error("Error loading company data:", err.message);
-          setError("Failed to load company data.");
-        }
+        console.error("Error loading company data:", err.message);
+        setError("Failed to load company data.");
       } finally {
         setLoading(false);
       }
@@ -43,16 +58,30 @@ const CompanyProfile = () => {
     fetchCompanyData();
   }, [companyId]);
 
-  const handleRefreshToken = async () => {
+
+  useEffect(() => {
+    if (activeTab === "Events") {
+      fetchCompanyEvents();
+    }
+  }, [activeTab]);
+
+  // Fetch company-specific events
+  const fetchCompanyEvents = async () => {
+    setEventsLoading(true);
     try {
-      const refreshToken = Cookies.get("refreshToken");
-      const response = await axios.post("http://localhost:5001/auth/refresh", {
-        refreshToken,
-      });
-      Cookies.set("token", response.data.accessToken);
+      const token = Cookies.get("token");
+      const response = await axios.get(
+        `http://localhost:5001/company/all_own_events`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setUserEvents(response.data); // Set the company events data to state
     } catch (err) {
-      console.error("Error refreshing token:", err.message);
-      setError("Session expired. Please log in again.");
+      console.error("Error fetching company events:", err);
+      setError("Failed to load company events.");
+    } finally {
+      setEventsLoading(false);
     }
   };
 
@@ -77,15 +106,93 @@ const CompanyProfile = () => {
     } else if (activeTab === "Events") {
       return (
         <div>
-          <h3>Company Events</h3>
-          <p>Here is a list of company events. (This is placeholder content)</p>
+          <button
+            style={{
+              backgroundColor: "#4CAF50",
+              color: "white",
+              border: "none",
+              padding: "10px 20px",
+              cursor: "pointer",
+              fontWeight: "bold",
+              borderRadius: "5px",
+              marginBottom: "10px",
+            }}
+            onClick={openModal}
+          >
+            +
+          </button>
+          
+          {eventsLoading ? (
+            <p>Loading events...</p>
+          ) : userEvents.length === 0 ? (
+            <p>No events found.</p>
+          ) : (
+            <div className="events-container">
+              {userEvents.map((event, index) => (
+                <div className="ticket-item" key={index}>
+                  <div className="ticket-column">
+                    <strong>Event ID</strong>
+                  </div>
+                  <div className="ticket-column">
+                    {event.name || "Unnamed Event"}
+                  </div>
+                  <div className="ticket-column">
+                    {event.location || "Location not provided"}
+                  </div>
+                  <div className="ticket-column">
+                    {event.date || "No date"}
+                  </div>
+              
+                  {/* Yellow Update Button */}
+                  <button
+                    style={{
+                      backgroundColor: "#FFD700",
+                      color: "black",
+                      border: "none",
+                      padding: "5px 10px",
+                      cursor: "pointer",
+                      fontWeight: "bold",
+                      marginRight: "5px",
+                    }}
+                    onClick={() => handleUpdateEvent(event.id)}
+                  >
+                    U
+                  </button>
+                  
+                  {/* Red Delete Button */}
+                  <button
+                    style={{
+                      backgroundColor: "red",
+                      color: "white",
+                      border: "none",
+                      padding: "5px 10px",
+                      cursor: "pointer",
+                      fontWeight: "bold",
+                    }}
+                    onClick={() => handleDeleteEvent(event.id)}
+                  >
+                    ✖
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       );
     } else if (activeTab === "Members") {
+      if (memberLoading) return <p>Loading tickets...</p>;
+      if (userMemebers.length === 0) return <p>No members found.</p>;
+
       return (
-        <div>
-          <h3>Company Members</h3>
-          <p>Here is a list of company members. (This is placeholder content)</p>
+        <div className="tickets-container">
+          {userMemebers.map((ticket, index) => (
+            <div className="ticket-item" key={index}>
+              <div className="ticket-column"><strong>Event ID</strong></div>
+              <div className="ticket-column">‘{ticket.event_id.id || "Unnamed Event"}’ event</div>
+              <div className="ticket-column">{ticket.location || "Location not provided"}</div>
+              <div className="ticket-column">{ticket.event_id.event_date || "No date"}</div>
+            </div>
+          ))}
         </div>
       );
     }
@@ -93,6 +200,54 @@ const CompanyProfile = () => {
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
+
+  const handleUpdateEvent = (eventId) => {
+    // Example logic for navigating to an update page
+    navigate(`/update-event/${eventId}`);
+  };
+  
+  const handleDeleteEvent = async (eventId) => {
+    if (window.confirm("Are you sure you want to delete this event?")) {
+      try {
+        const token = Cookies.get("token");
+        await axios.delete(`http://localhost:5001/event/${eventId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        alert("Event deleted successfully!");
+        fetchCompanyEvents(); // Refresh events list
+      } catch (err) {
+        console.error("Error deleting event:", err.message);
+        alert("Failed to delete event.");
+      }
+    }
+  };
+
+  // Open/Close modal handlers
+  const openModal = () => setModalOpen(true);
+  const closeModal = () => setModalOpen(false);
+
+  // Handle input changes in modal form
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewEvent({ ...newEvent, [name]: value });
+  };
+
+  // Submit new event
+  const handleAddEvent = async () => {
+    try {
+      const token = Cookies.get("token");
+      await axios.post("http://localhost:5001/event", newEvent, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      alert("Event added successfully!");
+      closeModal();
+      fetchCompanyEvents(); // Refresh event list
+    } catch (err) {
+      console.error("Error adding event:", err.message);
+      alert("Failed to add event.");
+    }
+  };
+  
 
   return (
     <div className="profile-page">
@@ -109,7 +264,6 @@ const CompanyProfile = () => {
             alt="Company Logo"
           />
           <h2>{companyData?.name || "Company Name"}</h2>
-          <p>Founded: {companyData?.foundedDate || "Not provided"}</p>
         </div>
       </div>
       <div className="profile-navigation">
@@ -150,8 +304,96 @@ const CompanyProfile = () => {
         </div>
       </div>
       <div className="profile-details">{renderTabContent()}</div>
+      {/* Modal for Creating a New Event */}
+      {isModalOpen && (
+        <Modal onClose={closeModal}>
+          <h2>Create New Event</h2>
+          <form>
+            <label>
+              Name:
+              <input
+                type="text"
+                name="name"
+                value={newEvent.name}
+                onChange={handleInputChange}
+              />
+            </label>
+            <label>
+              Description:
+              <textarea
+                name="description"
+                value={newEvent.description}
+                onChange={handleInputChange}
+              />
+            </label>
+            <label>
+              Category ID:
+              <input
+                type="number"
+                name="category_id"
+                value={newEvent.category_id}
+                onChange={handleInputChange}
+              />
+            </label>
+            <label>
+              Ticket Count:
+              <input
+                type="number"
+                name="ticket_count"
+                value={newEvent.ticket_count}
+                onChange={handleInputChange}
+              />
+            </label>
+            <label>
+              Ticket Price:
+              <input
+                type="number"
+                name="ticket_price"
+                value={newEvent.ticket_price}
+                onChange={handleInputChange}
+              />
+            </label>
+            <label>
+              Latitude:
+              <input
+                type="number"
+                name="lat"
+                value={newEvent.lat}
+                onChange={handleInputChange}
+              />
+            </label>
+            <label>
+              Longitude:
+              <input
+                type="number"
+                name="lng"
+                value={newEvent.lng}
+                onChange={handleInputChange}
+              />
+            </label>
+            <label>
+              Date:
+              <input
+                type="date"
+                name="date"
+                value={newEvent.date}
+                onChange={handleInputChange}
+              />
+            </label>
+            <button
+              type="button"
+              className="submit-button"
+              onClick={handleAddEvent}
+            >
+              Submit
+            </button>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 };
+
+
 
 export default CompanyProfile;

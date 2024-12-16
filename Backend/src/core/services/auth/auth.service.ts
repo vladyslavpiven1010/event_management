@@ -72,4 +72,9 @@ export class AuthService {
   async logout(token: string) {
     await this.tokenService.invalidateToken(token);
   }
+  
+  generateAccessToken(user: User) {
+    const payload = { sub: user.id, email: user.email, role: user.role_id };
+    return this.jwtService.sign(payload);
+  }
 }
