@@ -22,17 +22,61 @@ const CompanyProfile = () => {
   const [eventsLoading, setEventsLoading] = useState(false); // Loading state for events
   const [memberLoading, setMemberLoading] = useState(false); // Ticket loading state
 
+  const [categories, setCategories] = useState([]); // State to hold event categories
   const [isModalOpen, setModalOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
     name: "",
     description: "",
-    category_id: 0,
+    category_id: 1,
     ticket_count: 0,
     ticket_price: 0,
-    lat: 0,
-    lng: 0,
+    lat: null,
+    lng: null,
     date: ""
   })
+  const [address, setAddress] = useState(""); // Address input state
+  const [minDateTime, setMinDateTime] = useState("");
+
+  // Function to get the current date and time in YYYY-MM-DDTHH:mm format
+  const getCurrentDateTime = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  // Set the minimum datetime when the component mounts
+  useEffect(() => {
+    setMinDateTime(getCurrentDateTime());
+  }, []);
+
+  // Handle address input change
+  const handleAddressChange = (e) => {
+    setAddress(e.target.value);
+  };
+
+  // Fetch latitude and longitude from the address
+  const handleGeocode = async () => {
+    try {
+      const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
+        params: { q: address, format: "json", limit: 1 },
+      });
+
+      if (response.data && response.data.length > 0) {
+        const { lat, lon } = response.data[0];
+        setNewEvent({ ...newEvent, lat: parseInt(lat), lng: parseInt(lon) });
+        alert(`Coordinates found: Latitude ${lat}, Longitude ${lon}`);
+      } else {
+        alert("Address not found. Please try again.");
+      }
+    } catch (error) {
+      console.error("Geocoding error:", error);
+      alert("Failed to fetch coordinates. Check the address and try again.");
+    }
+  };
 
   const navigate = useNavigate();
 
@@ -56,14 +100,26 @@ const CompanyProfile = () => {
     };
 
     fetchCompanyData();
-  }, [companyId]);
 
+    const fetchCategories = async () => {
+      try {
+        const token = Cookies.get("token");
+        const response = await axios.get("http://localhost:5001/category", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setCategories(response.data); // Store categories in state
+      } catch (err) {
+        console.error("Error fetching categories:", err.message);
+        alert("Failed to load categories.");
+      }
+    };
+    if (isModalOpen) fetchCategories(); // Only fetch categories when modal is open
 
-  useEffect(() => {
     if (activeTab === "Events") {
       fetchCompanyEvents();
     }
-  }, [activeTab]);
+  }, [companyId, isModalOpen, activeTab]);
+
 
   // Fetch company-specific events
   const fetchCompanyEvents = async () => {
@@ -230,18 +286,29 @@ const CompanyProfile = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewEvent({ ...newEvent, [name]: value });
+    console.log(newEvent)
   };
 
-  // Submit new event
+  // Submit handler
   const handleAddEvent = async () => {
     try {
       const token = Cookies.get("token");
-      await axios.post("http://localhost:5001/event", newEvent, {
+
+      // Ensure the date format is sent correctly (adds seconds)
+      const formattedDate = `${newEvent.date}:00`;
+
+      const eventData = {
+        ...newEvent,
+        date: formattedDate,
+      };
+
+      await axios.post("http://localhost:5001/event", eventData, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       alert("Event added successfully!");
       closeModal();
-      fetchCompanyEvents(); // Refresh event list
+      fetchCompanyEvents();
     } catch (err) {
       console.error("Error adding event:", err.message);
       alert("Failed to add event.");
@@ -327,13 +394,19 @@ const CompanyProfile = () => {
               />
             </label>
             <label>
-              Category ID:
-              <input
-                type="number"
+              Category:
+              <select
                 name="category_id"
                 value={newEvent.category_id}
                 onChange={handleInputChange}
-              />
+              >
+                <option value="" disabled>Select a category</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
             </label>
             <label>
               Ticket Count:
@@ -354,32 +427,32 @@ const CompanyProfile = () => {
               />
             </label>
             <label>
-              Latitude:
+              Address:
               <input
-                type="number"
-                name="lat"
-                value={newEvent.lat}
-                onChange={handleInputChange}
+                type="text"
+                value={address}
+                onChange={handleAddressChange}
+                placeholder="Enter event address"
               />
+              <button type="button" onClick={handleGeocode}>
+                Find Coordinates
+              </button>
             </label>
-            <label>
-              Longitude:
+            {newEvent.lat && newEvent.lng && (
+              <p>
+                Latitude: {newEvent.lat}, Longitude: {newEvent.lng}
+              </p>
+            )}
+            <div className="form-group">
+              <label>Scheduled Date *</label>
               <input
-                type="number"
-                name="lng"
-                value={newEvent.lng}
-                onChange={handleInputChange}
-              />
-            </label>
-            <label>
-              Date:
-              <input
-                type="date"
-                name="date"
+                type="datetime-local"
                 value={newEvent.date}
-                onChange={handleInputChange}
+                onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
+                min={minDateTime} // Restrict past dates and times
+                required
               />
-            </label>
+            </div>
             <button
               type="button"
               className="submit-button"

@@ -138,7 +138,7 @@ const ProfilePage = () => {
               <div className="ticket-column"><strong>Event ID</strong></div>
               <div className="ticket-column">‘{ticket.event_id.id || "Unnamed Event"}’ event</div>
               <div className="ticket-column">{ticket.location || "Location not provided"}</div>
-              <div className="ticket-column">{ticket.event_id.event_date || "No date"}</div>
+              <div className="ticket-column">{ticket.event_id.date || "No date"}</div>
             </div>
           ))}
         </div>
@@ -178,7 +178,7 @@ const ProfilePage = () => {
               <div className="ticket-column"><strong>Event ID</strong></div>
               <div className="ticket-column">‘{event.id || "Unnamed Event"}’ event</div>
               <div className="ticket-column">{event.location || "Location not provided"}</div>
-              <div className="ticket-column">{event.event_date || "No date"}</div>
+              <div className="ticket-column">{event.date || "No date"}</div>
             </div>
           ))}
         </div>
