@@ -12,6 +12,22 @@ import { useNavigate } from "react-router-dom";
 import Modal from './Modal'
 
 const CompanyProfile = () => {
+  // Function to get the current date and time in YYYY-MM-DDTHH:mm format
+  const getCurrentDateTime = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  // Set the minimum datetime when the component mounts
+  useEffect(() => {
+    setMinDateTime(getCurrentDateTime());
+  }, []);
+
   const { companyId } = useParams(); // Get the company ID from the URL
   const [companyData, setCompanyData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -19,7 +35,7 @@ const CompanyProfile = () => {
   const [activeTab, setActiveTab] = useState("About"); // State for active tab
 
   const [userEvents, setUserEvents] = useState([]); // State to store user events
-  const [userMemebers, setUsermembers] = useState([]); // Tickets state
+  const [isEditing, setIsEditing] = useState(false); // Track editing mode
   const [eventsLoading, setEventsLoading] = useState(false); // Loading state for events
   const [memberLoading, setMemberLoading] = useState(false); // Ticket loading state
   const [memberCount, setMemberCount] = useState(0);
@@ -41,26 +57,12 @@ const CompanyProfile = () => {
     ticket_price: 0,
     lat: null,
     lng: null,
-    date: ""
+    event_date: getCurrentDateTime(),
   })
   const [address, setAddress] = useState(""); // Address input state
   const [minDateTime, setMinDateTime] = useState("");
-
-  // Function to get the current date and time in YYYY-MM-DDTHH:mm format
-  const getCurrentDateTime = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
-    const hours = String(now.getHours()).padStart(2, "0");
-    const minutes = String(now.getMinutes()).padStart(2, "0");
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
-
-  // Set the minimum datetime when the component mounts
-  useEffect(() => {
-    setMinDateTime(getCurrentDateTime());
-  }, []);
+  const [addresses, setAddresses] = useState(""); // Address input state
+  const [editingEvent, setEditingEvent] = useState(null); // Store the event being edited
 
   // Handle address input change
   const handleAddressChange = (e) => {
@@ -76,7 +78,7 @@ const CompanyProfile = () => {
 
       if (response.data && response.data.length > 0) {
         const { lat, lon } = response.data[0];
-        setNewEvent({ ...newEvent, lat: parseInt(lat), lng: parseInt(lon) });
+        setNewEvent({ ...newEvent, lat: parseFloat(lat), lng: parseFloat(lon) });
         alert(`Coordinates found: Latitude ${lat}, Longitude ${lon}`);
       } else {
         alert("Address not found. Please try again.");
@@ -86,6 +88,42 @@ const CompanyProfile = () => {
       alert("Failed to fetch coordinates. Check the address and try again.");
     }
   };
+
+  // Function to convert latitude and longitude into an address
+  const reverseGeocode = async (lat, lng) => {
+    try {
+      const response = await axios.get(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+      );
+      if (response.data && response.data.display_name) {
+        return response.data.display_name; // Full address
+      } else {
+        throw new Error("No address found for the given coordinates.");
+      }
+    } catch (error) {
+      console.error("Error during reverse geocoding:", error.message);
+      return "Unable to fetch address.";
+    }
+  };
+
+  // Populate addresses when userEvents change
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      const newAddresses = {};
+      for (const event of userEvents) {
+        console.log("Lat:", event.lat)
+        console.log("Lng:", event.lng)
+        if (event.lat && event.lng) {
+          newAddresses[event.id] = await reverseGeocode(event.lat, event.lng);
+        } else {
+          newAddresses[event.id] = "Location not provided";
+        }
+      }
+      setAddresses(newAddresses); // Update state with fetched addresses
+    };
+
+    fetchAddresses();
+  }, [userEvents]);
 
   const navigate = useNavigate();
 
@@ -232,16 +270,13 @@ const CompanyProfile = () => {
               {userEvents.map((event, index) => (
                 <div className="ticket-item" key={index}>
                   <div className="ticket-column">
-                    <strong>Event ID</strong>
-                  </div>
-                  <div className="ticket-column">
                     {event.name || "Unnamed Event"}
                   </div>
                   <div className="ticket-column">
-                    {event.location || "Location not provided"}
+                    {addresses[event.id] || "Location not provided"}
                   </div>
                   <div className="ticket-column">
-                    {event.date || "No date"}
+                    {event.event_date || "No date"}
                   </div>
               
                   {/* Yellow Update Button */}
@@ -255,7 +290,7 @@ const CompanyProfile = () => {
                       fontWeight: "bold",
                       marginRight: "5px",
                     }}
-                    onClick={() => handleUpdateEvent(event.id)}
+                    onClick={() => openEditModal(event)}
                   >
                     U
                   </button>
@@ -492,10 +527,6 @@ const CompanyProfile = () => {
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
 
-  const handleUpdateEvent = (eventId) => {
-    // Example logic for navigating to an update page
-    navigate(`/update-event/${eventId}`);
-  };
   
   const handleDeleteEvent = async (eventId) => {
     if (window.confirm("Are you sure you want to delete this event?")) {
@@ -517,30 +548,53 @@ const CompanyProfile = () => {
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
 
-  // Handle input changes in modal form
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewEvent({ ...newEvent, [name]: value });
-    console.log(newEvent)
+  
+    if (isEditing) {
+      setEditingEvent((prevEvent) => ({
+        ...prevEvent,
+        [name]: value,
+      }));
+      console.log(editingEvent)
+    } else {
+      setNewEvent((prevEvent) => ({
+        ...prevEvent,
+        [name]: value,
+      }));
+      console.log(newEvent)
+    }
+    
+    // If handling event_date specifically, ensure it's formatted correctly
+    if (name === "event_date" && value) {
+      const formattedDate = new Date(value).toISOString();
+      if (isEditing) {
+        setEditingEvent((prevEvent) => ({
+          ...prevEvent,
+          event_date: formattedDate,
+        }));
+      } else {
+        setNewEvent((prevEvent) => ({
+          ...prevEvent,
+          event_date: formattedDate,
+        }));
+      }
+    }
   };
 
   // Submit handler
   const handleAddEvent = async () => {
+    if (!newEvent.event_date || !newEvent.name) {
+      alert("Please fill in all required fields!");
+      return;
+    }
+  
     try {
       const token = Cookies.get("token");
-
-      // Ensure the date format is sent correctly (adds seconds)
-      const formattedDate = `${newEvent.date}:00`;
-
-      const eventData = {
-        ...newEvent,
-        date: formattedDate,
-      };
-
-      await axios.post("http://localhost:5001/event", eventData, {
+      await axios.post("http://localhost:5001/event", newEvent, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
+  
       alert("Event added successfully!");
       closeModal();
       fetchCompanyEvents();
@@ -549,7 +603,37 @@ const CompanyProfile = () => {
       alert("Failed to add event.");
     }
   };
+
+  // Open modal for editing an event
+  const openEditModal = (event) => {
+    setEditingEvent(event); // Set the selected event for editing
+    setIsEditing(true); // Switch to editing mode
+    setModalOpen(true); // Open the modal
+  };
   
+  // Handle updating an event
+  const handleUpdateEvent = async () => {
+    if (!editingEvent.event_date || !editingEvent.name) {
+      alert("Please fill in all required fields!");
+      return;
+    }
+    
+    console.log(editingEvent)
+
+    try {
+      const token = Cookies.get("token");
+      await axios.patch(`http://localhost:5001/event/${editingEvent.id}`, editingEvent, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      alert("Event updated successfully!");
+      closeModal();
+      fetchCompanyEvents();
+    } catch (err) {
+      console.error("Error updating event:", err.message);
+      alert("Failed to update event.");
+    }
+  };
 
   return (
     <div className="profile-page">
@@ -606,17 +690,18 @@ const CompanyProfile = () => {
         </div>
       </div>
       <div className="profile-details">{renderTabContent()}</div>
+      
       {/* Modal for Creating a New Event */}
       {isModalOpen && (
         <Modal onClose={closeModal}>
-          <h2>Create New Event</h2>
+          <h2>{isEditing ? "Edit Event" : "Create New Event"}</h2>
           <form>
             <label>
               Name:
               <input
                 type="text"
                 name="name"
-                value={newEvent.name}
+                value={isEditing ? editingEvent?.name : newEvent.name}
                 onChange={handleInputChange}
               />
             </label>
@@ -624,7 +709,7 @@ const CompanyProfile = () => {
               Description:
               <textarea
                 name="description"
-                value={newEvent.description}
+                value={isEditing ? editingEvent?.description : newEvent.description}
                 onChange={handleInputChange}
               />
             </label>
@@ -632,7 +717,7 @@ const CompanyProfile = () => {
               Category:
               <select
                 name="category_id"
-                value={newEvent.category_id}
+                value={isEditing ? editingEvent?.category_id : newEvent.category_id}
                 onChange={handleInputChange}
               >
                 <option value="" disabled>Select a category</option>
@@ -648,7 +733,7 @@ const CompanyProfile = () => {
               <input
                 type="number"
                 name="ticket_count"
-                value={newEvent.ticket_count}
+                value={isEditing ? editingEvent?.ticket_count : newEvent.ticket_count}
                 onChange={handleInputChange}
               />
             </label>
@@ -657,7 +742,7 @@ const CompanyProfile = () => {
               <input
                 type="number"
                 name="ticket_price"
-                value={newEvent.ticket_price}
+                value={isEditing ? editingEvent?.ticket_price : newEvent.ticket_price}
                 onChange={handleInputChange}
               />
             </label>
@@ -673,17 +758,17 @@ const CompanyProfile = () => {
                 Find Coordinates
               </button>
             </label>
-            {newEvent.lat && newEvent.lng && (
+            {(isEditing ? editingEvent.lat : newEvent.lat) && (
               <p>
-                Latitude: {newEvent.lat}, Longitude: {newEvent.lng}
+                Latitude: {isEditing ? editingEvent.lat : newEvent.lat}, Longitude: {isEditing ? editingEvent.lng : newEvent.lng}
               </p>
             )}
             <div className="form-group">
-              <label>Scheduled Date *</label>
+              <label>Event Date</label>
               <input
                 type="datetime-local"
-                value={newEvent.date}
-                onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
+                value={isEditing ? editingEvent?.event_date : newEvent.event_date}
+                onChange={handleInputChange}
                 min={minDateTime} // Restrict past dates and times
                 required
               />
@@ -691,7 +776,7 @@ const CompanyProfile = () => {
             <button
               type="button"
               className="submit-button"
-              onClick={handleAddEvent}
+              onClick={isEditing ? handleUpdateEvent : handleAddEvent}
             >
               Submit
             </button>

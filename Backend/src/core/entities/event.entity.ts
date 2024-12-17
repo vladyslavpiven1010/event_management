@@ -53,6 +53,9 @@ export class Event {
   category_id: Category;
 
   @Column({ nullable: true })
+  name: string;
+
+  @Column({ nullable: true })
   description?: string;
 
   @Column()
@@ -61,10 +64,10 @@ export class Event {
   @Column()
   ticket_price: number;
 
-  @Column()
+  @Column('decimal', { scale: 10 })
   lat: number;
 
-  @Column()
+  @Column('decimal', { scale: 10 })
   lng: number;
 
   @CreateDateColumn()

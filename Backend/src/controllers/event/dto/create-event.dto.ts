@@ -1,5 +1,5 @@
 import { CreateEventDto } from 'src/core/services/event/dtos';
-import { IsInt, IsNumber, IsOptional, MaxLength, MinLength, IsDate} from 'class-validator';
+import { IsInt, IsNumber, IsOptional, MaxLength, MinLength, IsDate, IsISO8601} from 'class-validator';
 
 export class CreateEventReqApiDto implements CreateEventDto {
   @IsInt()
@@ -38,5 +38,6 @@ export class CreateEventReqApiDto implements CreateEventDto {
   deleted_at?: Date;
 
   @IsDate()
+  @IsISO8601()
   date: Date;
 }

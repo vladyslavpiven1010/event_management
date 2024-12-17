@@ -16,6 +16,43 @@ const HomePage = () => {
   const [error, setError] = useState("");
   const [selectedEvent, setSelectedEvent] = useState(null); // Store the selected event
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [addresses, setAddresses] = useState(""); // Address input state
+
+  // Function to convert latitude and longitude into an address
+  const reverseGeocode = async (lat, lng) => {
+    try {
+      const response = await axios.get(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+      );
+      if (response.data && response.data.display_name) {
+        return response.data.display_name; // Full address
+      } else {
+        throw new Error("No address found for the given coordinates.");
+      }
+    } catch (error) {
+      console.error("Error during reverse geocoding:", error.message);
+      return "Unable to fetch address.";
+    }
+  };
+
+  // Populate addresses when userEvents change
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      const newAddresses = {};
+      for (const event of events) {
+        console.log("Lat:", event.lat)
+        console.log("Lng:", event.lng)
+        if (event.lat && event.lng) {
+          newAddresses[event.id] = await reverseGeocode(event.lat, event.lng);
+        } else {
+          newAddresses[event.id] = "Location not provided";
+        }
+      }
+      setAddresses(newAddresses); // Update state with fetched addresses
+    };
+
+    fetchAddresses();
+  }, [events]);
 
   // Function to fetch events with filters
   const fetchEvents = async (filters = {}) => {
@@ -157,11 +194,10 @@ const HomePage = () => {
             {events.map((event) => (
               <EventCard
               key={event.id}
-              name={event.description}
+              name={event.name}
               tickets={event.ticket_count}
-              address={`Lat: ${event.lat}, Lng: ${event.lng}`}
               date={event.event_date}
-              company={event.category_id?.name || "N/A"}
+              desc={event.description}
               category={event.category_id?.name || "Uncategorized"}
               onViewDetails={() => handleViewDetails(event)} // Pass the event data
             />
@@ -173,7 +209,7 @@ const HomePage = () => {
                 <p><strong>Tickets Available:</strong> {selectedEvent.ticket_count}</p>
                 <p><strong>Ticket Price:</strong> ${selectedEvent.ticket_price}</p>
                 <p><strong>Date:</strong> {new Date(selectedEvent.event_date).toLocaleDateString()}</p>
-                <p><strong>Location:</strong> Lat: {selectedEvent.lat}, Lng: {selectedEvent.lng}</p>
+                <p><strong>Location:</strong>{addresses[selectedEvent.id] || "Location not provided"}</p>
                 <button
                   style={{
                     backgroundColor: "#4CAF50",
