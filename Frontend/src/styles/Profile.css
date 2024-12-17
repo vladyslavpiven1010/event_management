@@ -33,15 +33,10 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.profile-info h2 {
+.profile-info h1,h2, h3 {
   margin: 20px 0;
   font-size: 24px;
   color: #333;
-}
-
-.profile-info p {
-  font-size: 14px;
-  color: #666;
 }
 
 .user-credentials {

@@ -14,6 +14,7 @@ import Cookies from "js-cookie";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import ProfileSettingsModal from "./../components/UpdateModal";
 
 const ProfilePage = () => {
   const { userId } = useParams();
@@ -26,8 +27,17 @@ const ProfilePage = () => {
   const [ticketLoading, setTicketLoading] = useState(false); // Ticket loading state
   const [eventsLoading, setEventsLoading] = useState(false); // Loading state for events
   const [addresses, setAddresses] = useState(""); // Address input state
+  const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
 
   const navigate = useNavigate();
+
+  const handleOpenSettings = () => {
+    setSettingsModalOpen(true);
+  };
+
+  const handleCloseSettings = () => {
+    setSettingsModalOpen(false);
+  };
 
   // Function to convert latitude and longitude into an address
   const reverseGeocode = async (lat, lng) => {
@@ -51,8 +61,6 @@ const ProfilePage = () => {
     const fetchAddresses = async () => {
       const newAddresses = {};
       for (const event of userEvents) {
-        console.log("Lat:", event.lat)
-        console.log("Lng:", event.lng)
         if (event.lat && event.lng) {
           newAddresses[event.id] = await reverseGeocode(event.lat, event.lng);
         } else {
@@ -239,8 +247,19 @@ const ProfilePage = () => {
           <h2>{userData.name || "John Doe"}</h2>
         </div>
         <div className="settings-icon">
-          <a href="/settings">⚙</a>
+          <span style={{ cursor: "pointer" }} onClick={handleOpenSettings}>
+            ⚙
+          </span>
         </div>
+
+         {/* Render Modal */}
+        {isSettingsModalOpen && (
+          <ProfileSettingsModal
+            userId={userId}
+            onClose={handleCloseSettings}
+          />
+        )}
+
         <div className="user-credentials">
           {/* <p>Birth date: {userData.birthDate || "Not provided"}</p> */}
           <p>
