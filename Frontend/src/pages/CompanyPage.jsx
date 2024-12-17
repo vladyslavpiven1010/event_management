@@ -6,6 +6,7 @@ import profileImage from './../assets/defaultAvatar.png';
 
 import axios from "axios";
 import Cookies from "js-cookie";
+import {jwtDecode} from "jwt-decode";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import Modal from './Modal'
@@ -21,6 +22,14 @@ const CompanyProfile = () => {
   const [userMemebers, setUsermembers] = useState([]); // Tickets state
   const [eventsLoading, setEventsLoading] = useState(false); // Loading state for events
   const [memberLoading, setMemberLoading] = useState(false); // Ticket loading state
+  const [memberCount, setMemberCount] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [searchUninvited, setSearchUninvited] = useState(""); // Search for uninvited users
+  const [searchInvited, setSearchInvited] = useState("");
+
+  const [members, setMembers] = useState([]); // State for current members
+  const [nonMembers, setNonMembers] = useState([]); // State for users not in the company
+  const [isInviteModalOpen, setInviteModalOpen] = useState(false); // State to open invite modal
 
   const [categories, setCategories] = useState([]); // State to hold event categories
   const [isModalOpen, setModalOpen] = useState(false);
@@ -99,6 +108,22 @@ const CompanyProfile = () => {
       }
     };
 
+    const fetchCurrentUser = async () => {
+      try {
+        const token = Cookies.get("token");
+        const decodedToken = jwtDecode(token);
+        const userId = decodedToken?.sub;
+
+        const response = await axios.get(`http://localhost:5001/user/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setCurrentUserId(response.data.id); // Assuming 'me' endpoint returns the user's data
+      } catch (error) {
+        console.error("Error fetching current user:", error.message);
+      }
+    };
+    fetchCurrentUser();
+
     fetchCompanyData();
 
     const fetchCategories = async () => {
@@ -117,6 +142,10 @@ const CompanyProfile = () => {
 
     if (activeTab === "Events") {
       fetchCompanyEvents();
+    }
+
+    if (activeTab === "Members") {
+      fetchCompanyMembers();
     }
   }, [companyId, isModalOpen, activeTab]);
 
@@ -157,6 +186,22 @@ const CompanyProfile = () => {
             <h3>Country Code</h3>
             <p>{companyData?.country_code || "Not provided"}</p>
           </div>
+          {/* Delete Company Button */}
+          <button
+            style={{
+              backgroundColor: "red",
+              color: "white",
+              padding: "10px",
+              marginTop: "20px",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+              fontWeight: "bold",
+            }}
+            onClick={handleDeleteCompany}
+          >
+            Delete Company
+          </button>
         </div>
       );
     } else if (activeTab === "Events") {
@@ -236,23 +281,213 @@ const CompanyProfile = () => {
         </div>
       );
     } else if (activeTab === "Members") {
-      if (memberLoading) return <p>Loading tickets...</p>;
-      if (userMemebers.length === 0) return <p>No members found.</p>;
-
       return (
-        <div className="tickets-container">
-          {userMemebers.map((ticket, index) => (
-            <div className="ticket-item" key={index}>
-              <div className="ticket-column"><strong>Event ID</strong></div>
-              <div className="ticket-column">‘{ticket.event_id.id || "Unnamed Event"}’ event</div>
-              <div className="ticket-column">{ticket.location || "Location not provided"}</div>
-              <div className="ticket-column">{ticket.event_id.event_date || "No date"}</div>
+        <div>
+          <input
+            type="text"
+            placeholder="Search members..."
+            value={searchInvited}
+            onChange={(e) => setSearchInvited(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "8px",
+              marginBottom: "10px",
+              borderRadius: "5px",
+              border: "1px solid #ccc",
+            }}
+          />
+          <button
+            style={{
+              backgroundColor: "#4CAF50",
+              color: "white",
+              padding: "10px",
+              marginBottom: "10px",
+              border: "none",
+              cursor: "pointer",
+              fontWeight: "bold",
+            }}
+            onClick={() => {
+              fetchNonMembers();
+              setInviteModalOpen(true);
+            }}
+          >
+            Add New Member
+          </button>
+    
+          {memberLoading ? (
+            <p>Loading members...</p>
+          ) : filteredMembers.length === 0 ? (
+            <p>No members found.</p>
+          ) : (
+            <div>
+              {filteredMembers.map((member) => (
+                <div key={member.id} className="member-item" style={{ display: "flex", alignItems: "center" }}>
+                  <span>{member.name || "Unnamed Member"}</span>
+                  {memberCount > 1 && (
+                    <button
+                      style={{
+                        backgroundColor: "red",
+                        color: "white",
+                        marginLeft: "10px",
+                        border: "none",
+                        padding: "5px",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => handleKickOut(member.id)}
+                    >
+                      Kick Out
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+    
+    {isInviteModalOpen && (
+        <Modal onClose={() => setInviteModalOpen(false)}>
+          <h2>Invite New Member</h2>
+          <input
+            type="text"
+            placeholder="Search users..."
+            value={searchUninvited}
+            onChange={(e) => setSearchUninvited(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "8px",
+              marginBottom: "10px",
+              borderRadius: "5px",
+              border: "1px solid #ccc",
+            }}
+          />
+          {filteredNonMembers.length === 0 ? (
+            <p>No users found.</p>
+          ) : (
+            <ul>
+              {filteredNonMembers.map((user) => (
+                <li key={user.id} style={{ marginBottom: "10px" }}>
+                  <span>{user.name || "Unnamed User"}</span>
+                  <button
+                    style={{
+                      backgroundColor: "#4CAF50",
+                      color: "white",
+                      marginLeft: "10px",
+                      padding: "5px",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => handleInviteUser(user.id)}
+                  >
+                    Invite
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Modal>
+      )}
         </div>
       );
     }
   };
+
+  const fetchCompanyMembers = async () => {
+    setMemberLoading(true);
+    try {
+      const token = Cookies.get("token");
+      const response = await axios.get('http://localhost:5001/company/members', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log(response)
+      setMembers(response.data); // Update members state
+      setMemberCount(response.data.length);
+    } catch (error) {
+      console.error("Error fetching members:", error.message);
+    } finally {
+      setMemberLoading(false);
+    }
+  };
+
+  const fetchNonMembers = async () => {
+    try {
+      const token = Cookies.get("token");
+      const response = await axios.get('http://localhost:5001/user/free', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setNonMembers(response.data); // Update state with all users
+    } catch (error) {
+      console.error("Error fetching users:", error.message);
+    }
+  };
+
+  const handleKickOut = async (userId) => {
+    if (window.confirm("Are you sure you want to kick out this user?")) {
+      try {
+        const token = Cookies.get("token");
+        await axios.post(`http://localhost:5001/company/kick_out/${userId}`, {}, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        alert("User kicked out successfully!");
+  
+        // Check if the kicked user is the current logged-in user
+        if (userId === currentUserId) {
+          alert("You have been removed from the company. Redirecting to your profile...");
+          navigate("/profile"); // Redirect to the profile page
+        } else {
+          fetchCompanyMembers(); // Refresh members list
+        }
+      } catch (error) {
+        console.error("Error kicking out user:", error.message);
+        alert("Failed to kick out user.");
+      }
+    }
+  };
+
+  const handleInviteUser = async (userId) => {
+    try {
+      const token = Cookies.get("token");
+      await axios.post(`http://localhost:5001/company/invite/${userId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      alert("User invited successfully!");
+      fetchCompanyMembers(); // Refresh the members list
+      setInviteModalOpen(false);
+    } catch (error) {
+      console.error("Error inviting user:", error.message);
+      alert("Failed to invite user.");
+    }
+  };
+
+  const handleDeleteCompany = async () => {
+    if (window.confirm("Are you sure you want to delete this company? This action is irreversible.")) {
+      try {
+        const token = Cookies.get("token");
+        const decodedToken = jwtDecode(token);
+        const userId = decodedToken?.sub;
+
+        const response = await axios.delete(`http://localhost:5001/company/${companyId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        console.log(response)
+  
+        alert("Company deleted successfully!");
+        Cookies.set("token", response.data.accessToken);
+  
+        navigate(`/profile/${userId}`);
+      } catch (error) {
+        console.error("Error deleting company:", error.message);
+        alert("Failed to delete company. Please try again.");
+      }
+    }
+  };
+
+  const filteredNonMembers = nonMembers.filter((user) =>
+    user.name.toLowerCase().includes(searchUninvited.toLowerCase())
+  );
+
+  const filteredMembers = members.filter((user) =>
+    user.name.toLowerCase().includes(searchInvited.toLowerCase())
+  );
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;

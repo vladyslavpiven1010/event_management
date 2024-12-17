@@ -16,6 +16,13 @@ export class UserController {
         return user;
     }
 
+    @Get('free')
+    async getFreeUsers(): Promise<any> {
+        const user = await this.userService.findFreeUsers();
+        return user;
+    }
+    
+
     @Get(':id')
     async getUser(@Param() params, @Req() request: any): Promise<any> {
         const user = await this.userService.findOneById(params["id"]);

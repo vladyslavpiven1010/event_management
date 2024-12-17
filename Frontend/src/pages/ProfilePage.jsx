@@ -207,7 +207,7 @@ const ProfilePage = () => {
           <a href="/settings">⚙</a>
         </div>
         <div className="user-credentials">
-          <p>Birth date: {userData.birthDate || "Not provided"}</p>
+          {/* <p>Birth date: {userData.birthDate || "Not provided"}</p> */}
           <p>
             Company name:{" "}
             {userData?.company_id?.name ? (

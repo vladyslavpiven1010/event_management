@@ -53,12 +53,11 @@ export class CompanyController {
 
     const user = await this.userService.findOneById(request.user.sub);
     const newAccessToken =  await this.authService.generateAccessToken(user);
-    console.log(newAccessToken)
 
     return {
       company,
       accessToken: newAccessToken, // Return the updated token
-  };
+    };
   }
 
   @RequiredRoles(ERole.COMPANY_USER, ERole.ADMIN)
@@ -91,10 +90,14 @@ export class CompanyController {
   async kickOutUser(@Req() request: any, @Param() params: any): Promise<void> {
     const user = await this.userService.findOneById(request.user.sub);
     const kicked_user = await this.userService.findOneById(params["id"]);
+    const memberCount = await this.userService.countCompanyMembers(user.company_id.id);
 
     if (!kicked_user) throw new BadRequestException("User with this credentials does not exist");
     if (request.user.role !== ERole.ADMIN && user.company_id.id !== kicked_user.company_id.id) 
       throw new ForbiddenException('You do not have permission to kick out user from this company');
+    if (memberCount <= 1) {
+      throw new BadRequestException('Cannot kick out the last remaining member of the company');
+    }
 
     await this.companyService.kickOutUser(params["id"]);
   }
@@ -110,7 +113,13 @@ export class CompanyController {
       throw new ForbiddenException('You do not have permission to update this company');
 
     await this.companyService.kickOutAllUsers(company.id);
+    const updatedUser = await this.userService.findOneById(user.id);
+
     const deletedCompany = await this.companyService.remove(params["id"]);
-    return deletedCompany;
+    const newAccessToken = await this.authService.generateAccessToken(updatedUser);
+
+    return {
+      accessToken: newAccessToken, // Return the updated token
+    };
   }
 }

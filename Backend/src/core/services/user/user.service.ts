@@ -33,6 +33,15 @@ export class UserService {
       .getMany();
   }
 
+  findFreeUsers(): Promise<User[]> {
+    return this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect("user.company_id", "company")
+      .innerJoinAndSelect("user.role_id", "role")
+      .where("user.role_id = 1")
+      .getMany();
+  }
+
   findOneById(id: number): Promise<User | null> {
     return this.userRepository
       .createQueryBuilder('user')
@@ -72,6 +81,10 @@ export class UserService {
     await this.userRepository.delete(id);
   }
 
+  async countCompanyMembers(companyId: number): Promise<number> {
+    return await this.userRepository.count({ where: { company_id: companyId } });
+  }
+
   async updateRefreshToken(id: number, refreshToken: string) {
     const user = await this.userRepository.findOneBy({ id } );
     user.refreshToken = refreshToken;
@@ -79,7 +92,7 @@ export class UserService {
   }
 
   async updateToUserRole(id: number) {
-    const user: User = await this.userRepository.findOneBy({ id });
+    const user: User = await this.findOneById(id);
     if (user) {
       user.role_id = await this.roleRepository.findOneBy({name: ERole.USER});
       user.company_id = null;

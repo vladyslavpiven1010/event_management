@@ -6,6 +6,7 @@ import EventCard from "../components/EventCard";
 import "./../styles/Home.css";
 import Cookies from "js-cookie";
 import {jwtDecode} from "jwt-decode";
+import Modal from './Modal'
 
 const HomePage = () => {
   const [user, setUser] = useState(null);
@@ -13,6 +14,8 @@ const HomePage = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedEvent, setSelectedEvent] = useState(null); // Store the selected event
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Function to fetch events with filters
   const fetchEvents = async (filters = {}) => {
@@ -98,6 +101,32 @@ const HomePage = () => {
     fetchEvents(filters); // Fetch events with the selected filters
   };
 
+  const handleViewDetails = (event) => {
+    setSelectedEvent(event); // Set the selected event
+    setIsModalOpen(true);    // Open the modal
+  };
+  
+  const handleCloseModal = () => {
+    setSelectedEvent(null);
+    setIsModalOpen(false);
+  };
+  
+  const handleBuyTicket = async (eventId) => {
+    try {
+      const token = Cookies.get("token");
+      await axios.post(
+        "http://localhost:5001/ticket",
+        { event_id: eventId }, // Pass event ID in the request body
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert("Ticket purchased successfully!");
+      handleCloseModal(); // Close the modal after buying
+    } catch (error) {
+      console.error("Error buying ticket:", error.message);
+      alert(error.response?.data?.message || "Failed to buy ticket");
+    }
+  };
+
   if (error) {
     return <div>Error loading data: {error}</div>;
   }
@@ -127,15 +156,42 @@ const HomePage = () => {
           <div className="events-grid">
             {events.map((event) => (
               <EventCard
-                key={event.id}
-                name={event.description}
-                tickets={event.ticket_count}
-                address={`Lat: ${event.lat}, Lng: ${event.lng}`}
-                date={event.event_date}
-                company={event.category_id?.name || "N/A"}
-                category={event.category_id?.name || "Uncategorized"}
-              />
+              key={event.id}
+              name={event.description}
+              tickets={event.ticket_count}
+              address={`Lat: ${event.lat}, Lng: ${event.lng}`}
+              date={event.event_date}
+              company={event.category_id?.name || "N/A"}
+              category={event.category_id?.name || "Uncategorized"}
+              onViewDetails={() => handleViewDetails(event)} // Pass the event data
+            />
             ))}
+            {isModalOpen && selectedEvent && (
+              <Modal onClose={handleCloseModal}>
+                <h2>{selectedEvent.description}</h2>
+                <p><strong>Category:</strong> {selectedEvent.category_id?.name || "Uncategorized"}</p>
+                <p><strong>Tickets Available:</strong> {selectedEvent.ticket_count}</p>
+                <p><strong>Ticket Price:</strong> ${selectedEvent.ticket_price}</p>
+                <p><strong>Date:</strong> {new Date(selectedEvent.event_date).toLocaleDateString()}</p>
+                <p><strong>Location:</strong> Lat: {selectedEvent.lat}, Lng: {selectedEvent.lng}</p>
+                <button
+                  style={{
+                    backgroundColor: "#4CAF50",
+                    color: "white",
+                    border: "none",
+                    padding: "10px",
+                    cursor: "pointer",
+                    fontWeight: "bold",
+                    borderRadius: "5px",
+                    marginTop: "10px",
+                  }}
+                  onClick={() => handleBuyTicket(selectedEvent.id)}
+                >
+                  Buy Ticket
+                </button>
+              </Modal>
+            )}
+
           </div>
         )}
       </div>
