@@ -10,6 +10,7 @@ import {jwtDecode} from "jwt-decode";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import Modal from './Modal'
+import ProfileSettingsModal from "./../components/UpdateModal";
 
 const CompanyProfile = () => {
   // Function to get the current date and time in YYYY-MM-DDTHH:mm format
@@ -63,6 +64,19 @@ const CompanyProfile = () => {
   const [minDateTime, setMinDateTime] = useState("");
   const [addresses, setAddresses] = useState(""); // Address input state
   const [editingEvent, setEditingEvent] = useState(null); // Store the event being edited
+  
+  const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [isCompanyUpdate, setIsCompanyUpdate] = useState(false);
+
+
+  const handleOpenSettings = () => {
+    setIsCompanyUpdate(true)
+    setSettingsModalOpen(true);
+  };
+
+  const handleCloseSettings = () => {
+    setSettingsModalOpen(false);
+  };
 
   // Handle address input change
   const handleAddressChange = (e) => {
@@ -652,6 +666,22 @@ const CompanyProfile = () => {
           <h2>{companyData?.name || "Company Name"}</h2>
         </div>
       </div>
+      
+      <div className="settings-icon">
+        <span style={{ cursor: "pointer" }} onClick={handleOpenSettings}>
+          ⚙
+        </span>
+      </div>
+
+      {/* Render Modal */}
+      {isSettingsModalOpen && (
+        <ProfileSettingsModal
+          companyId={companyData.id}
+          isCompany={isCompanyUpdate}
+          onClose={handleCloseSettings}
+        />
+      )}
+
       <div className="profile-navigation">
         <button
           className={`nav-btn ${activeTab === "About" ? "active" : ""}`}
