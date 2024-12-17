@@ -1,7 +1,7 @@
 import React from "react";
 import "./../styles/EventCard.css";
 
-const EventCard = ({ name, tickets, address, date, company, category, onViewDetails }) => {
+const EventCard = ({ name, tickets, date, desc, category, onViewDetails }) => {
   return (
     <div className="event-card">
       <div className="event-header">
@@ -10,8 +10,7 @@ const EventCard = ({ name, tickets, address, date, company, category, onViewDeta
       </div>
       <div className="event-details">
         <p><strong>Date:</strong> {new Date(date).toLocaleDateString()}</p>
-        <p><strong>Address:</strong> {address}</p>
-        <p><strong>Company:</strong> {company}</p>
+        <p><strong>Description:</strong> {desc}</p>
         <p><strong>Tickets Available:</strong> {tickets}</p>
       </div>
       <button className="event-button" onClick={onViewDetails}>View Details</button>

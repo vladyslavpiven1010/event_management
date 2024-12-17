@@ -25,8 +25,45 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState("About");
   const [ticketLoading, setTicketLoading] = useState(false); // Ticket loading state
   const [eventsLoading, setEventsLoading] = useState(false); // Loading state for events
+  const [addresses, setAddresses] = useState(""); // Address input state
 
   const navigate = useNavigate();
+
+  // Function to convert latitude and longitude into an address
+  const reverseGeocode = async (lat, lng) => {
+    try {
+      const response = await axios.get(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+      );
+      if (response.data && response.data.display_name) {
+        return response.data.display_name; // Full address
+      } else {
+        throw new Error("No address found for the given coordinates.");
+      }
+    } catch (error) {
+      console.error("Error during reverse geocoding:", error.message);
+      return "Unable to fetch address.";
+    }
+  };
+
+  // Populate addresses when userEvents change
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      const newAddresses = {};
+      for (const event of userEvents) {
+        console.log("Lat:", event.lat)
+        console.log("Lng:", event.lng)
+        if (event.lat && event.lng) {
+          newAddresses[event.id] = await reverseGeocode(event.lat, event.lng);
+        } else {
+          newAddresses[event.id] = "Location not provided";
+        }
+      }
+      setAddresses(newAddresses); // Update state with fetched addresses
+    };
+
+    fetchAddresses();
+  }, [userEvents]);
 
   const handleCreateCompany = () => {
     const userToken = Cookies.get("token");
@@ -135,10 +172,9 @@ const ProfilePage = () => {
         <div className="tickets-container">
           {userTickets.map((ticket, index) => (
             <div className="ticket-item" key={index}>
-              <div className="ticket-column"><strong>Event ID</strong></div>
-              <div className="ticket-column">‘{ticket.event_id.id || "Unnamed Event"}’ event</div>
-              <div className="ticket-column">{ticket.location || "Location not provided"}</div>
-              <div className="ticket-column">{ticket.event_id.date || "No date"}</div>
+              <div className="ticket-column">{ticket.event_id.name || "Unnamed Event"}’ event</div>
+              <div className="ticket-column">{addresses[ticket.event_id] || "Location not provided"}</div>
+              <div className="ticket-column">{ticket.event_id.event_date || "No date"}</div>
             </div>
           ))}
         </div>
@@ -175,10 +211,9 @@ const ProfilePage = () => {
         <div className="events-container">
           {userEvents.map((event, index) => (
             <div className="ticket-item" key={index}>
-              <div className="ticket-column"><strong>Event ID</strong></div>
-              <div className="ticket-column">‘{event.id || "Unnamed Event"}’ event</div>
-              <div className="ticket-column">{event.location || "Location not provided"}</div>
-              <div className="ticket-column">{event.date || "No date"}</div>
+              <div className="ticket-column">‘{event.name || "Unnamed Event"}’ event</div>
+              <div className="ticket-column">{addresses[event.id] || "Location not provided"}</div>
+              <div className="ticket-column">{event.event_date || "No date"}</div>
             </div>
           ))}
         </div>
