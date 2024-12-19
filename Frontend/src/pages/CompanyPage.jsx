@@ -7,8 +7,7 @@ import profileImage from './../assets/defaultAvatar.png';
 import axios from "axios";
 import Cookies from "js-cookie";
 import {jwtDecode} from "jwt-decode";
-import { useParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Modal from './Modal'
 import ProfileSettingsModal from "./../components/UpdateModal";
 
