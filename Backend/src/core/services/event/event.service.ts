@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Event } from 'src/core/entities';
 import { DataSource } from 'typeorm';
 import { CreateEventDto, UpdateEventDto } from './dtos';
+import {NotificationService} from '../notification/notification.service'
 
 /**
  * Class that represents Event service. It contains business logic.
@@ -10,7 +11,7 @@ import { CreateEventDto, UpdateEventDto } from './dtos';
 export class EventService {
   private eventRepository;
 
-  constructor(private dataSource: DataSource) {
+  constructor(private dataSource: DataSource, private readonly notificationService: NotificationService,) {
     this.eventRepository = this.dataSource.getRepository(Event);
   }
 
@@ -80,5 +81,63 @@ export class EventService {
 
   async remove(id: number): Promise<Event> {
     return await this.eventRepository.delete(id);
+  }
+
+  async notifyUserAboutMostFrequentCategoryEvents(
+    userId: number,
+  ): Promise<void> {
+    const userCategories = await this.eventRepository
+      .createQueryBuilder('event')
+      .innerJoin('event.category_id', 'category')
+      .innerJoin('event.user_id', 'user')
+      .select('user.id', 'userId')
+      .addSelect('category.id', 'categoryId')
+      .where('user.id = :userId', { userId })
+      .getRawMany();
+
+    const categoryCountMap = new Map<number, number>();
+    userCategories.forEach(({ categoryId }) => {
+      categoryCountMap.set(
+        categoryId,
+        (categoryCountMap.get(categoryId) || 0) + 1,
+      );
+    });
+
+    let mostFrequentCategoryId: number | null = null;
+    let highestCount = 0;
+    categoryCountMap.forEach((count, categoryId) => {
+      if (count > highestCount) {
+        mostFrequentCategoryId = categoryId;
+        highestCount = count;
+      }
+    });
+
+    if (mostFrequentCategoryId === null) {
+      return;
+    }
+
+    const now = new Date();
+    const newEvents = await this.eventRepository
+      .createQueryBuilder('event')
+      .innerJoinAndSelect('event.category_id', 'category')
+      .where('event.category_id = :categoryId', {
+        categoryId: mostFrequentCategoryId,
+      })
+      .andWhere('event.event_date > :now', { now })
+      .getMany();
+
+    if (newEvents.length > 0) {
+      const notificationMessage = `Hello! New events in your favorite category: ${newEvents
+        .map(
+          (event) =>
+            `"${event.description}" on ${event.event_date.toDateString()}`,
+        )
+        .join(', ')}`;
+      await this.notificationService.sendNotificationToUser(
+        userId,
+        notificationMessage,
+        3
+      );
+    }
   }
 }

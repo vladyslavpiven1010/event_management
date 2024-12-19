@@ -7,6 +7,7 @@ import "./../styles/Home.css";
 import Cookies from "js-cookie";
 import {jwtDecode} from "jwt-decode";
 import Modal from './Modal'
+import NotificationCard from "../components/NotificationCard";
 
 const HomePage = () => {
   const [user, setUser] = useState(null);
@@ -17,6 +18,9 @@ const HomePage = () => {
   const [selectedEvent, setSelectedEvent] = useState(null); // Store the selected event
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [addresses, setAddresses] = useState(""); // Address input state
+
+  const [notifications, setNotifications] = useState([]);
+  const [activeTab, setActiveTab] = useState("events")
 
   // Function to convert latitude and longitude into an address
   const reverseGeocode = async (lat, lng) => {
@@ -164,14 +168,54 @@ const HomePage = () => {
     }
   };
 
-  if (error) {
-    return <div>Error loading data: {error}</div>;
-  }
+  const fetchNotifications = async () => {
+    setLoading(true);
+    try {
+      const token = Cookies.get("token");
+      const response = await axios.get("http://localhost:5001/notification/all_own", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setNotifications(response.data);
+    } catch (err) {
+      console.error("Error fetching notifications:", err.message);
+      setError("Failed to load notifications");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (tab === "notifications") {
+      fetchNotifications();
+    } else {
+      fetchEvents();
+    }
+  };
+
+  const handleDeleteMessage = async (id) => {
+    try {
+      const token = Cookies.get("token");
+      await fetch(`http://localhost:5001/notification/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setNotifications((prev) =>
+        prev.filter((notification) => notification.id !== id)
+      );
+    } catch (error) {
+      alert("Failed to delete notification");
+      console.error(error);
+    }
+  };
+  
+
+  if (error) return <div>Error loading data: {error}</div>;
 
   return (
     <div className="home-page">
       {isLoggedIn ? (
-        <Sidebar user={user} onLogout={handleLogout}/>
+        <Sidebar user={user} onLogout={handleLogout} onTabChange={handleTabChange}/>
       ) : (
         <div className="sidebar">
           <a href="/login">Login</a>
@@ -184,25 +228,27 @@ const HomePage = () => {
         </div>
       )}
       <div className="content">
-        <h1>Events</h1>
-        {loading ? (
-          <p>Loading events...</p>
-        ) : error ? (
-          <p>{error}</p>
-        ) : (
-          <div className="events-grid">
-            {events.map((event) => (
-              <EventCard
-              key={event.id}
-              name={event.name}
-              tickets={event.ticket_count}
-              date={event.event_date}
-              desc={event.description}
-              category={event.category_id?.name || "Uncategorized"}
-              onViewDetails={() => handleViewDetails(event)} // Pass the event data
-            />
-            ))}
-            {isModalOpen && selectedEvent && (
+        {activeTab === "events" ? (
+        <>
+          <h1>Events</h1>
+          {loading ? (
+            <p>Loading events...</p>
+          ) : error ? (
+            <p>{error}</p>
+          ) : (
+            <div className="events-grid">
+              {events.map((event) => (
+                <EventCard
+                  key={event.id}
+                  name={event.name}
+                  tickets={event.ticket_count}
+                  date={event.event_date}
+                  desc={event.description}
+                  category={event.category_id?.name || "Uncategorized"}
+                  onViewDetails={() => handleViewDetails(event)} // Pass the event data
+                />
+              ))}
+              {isModalOpen && selectedEvent && (
               <Modal onClose={handleCloseModal}>
                 <h2>{selectedEvent.description}</h2>
                 <p><strong>Category:</strong> {selectedEvent.category_id?.name || "Uncategorized"}</p>
@@ -227,8 +273,29 @@ const HomePage = () => {
                 </button>
               </Modal>
             )}
-
-          </div>
+            </div>
+          )}
+        </>  
+        ) : (
+          <>
+            <h1>Notifivations</h1>
+            {loading ? (
+              <p>Loading notifications...</p>
+            ) : error ? (
+              <p>{error}</p>
+            ) : ( 
+              <div className="notifications-list">
+                {notifications.map((notification) => (
+                  <NotificationCard
+                    key={notification.id}
+                    date={notification.title}
+                    message={notification.content}
+                    onClose={() => handleDeleteMessage(notification.id)}
+                  />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
       <Filters onApplyFilters={handleApplyFilters} /> {/* Pass the handler as a prop */}

@@ -1,0 +1,43 @@
+.notification-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #000; /* Black border for structure */
+    border-radius: 5px;
+    padding: 10px 15px;
+    margin: 10px 0;
+    background-color: #fff; /* White background */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  }
+  
+  .notification-date {
+    font-size: 14px;
+    font-weight: bold;
+    margin-right: 15px;
+  }
+  
+  .notification-message {
+    flex-grow: 1; /* Allow the message to expand */
+    font-size: 16px;
+    margin: 0;
+    color: #000; /* Black text */
+  }
+  
+  .notification-close-btn {
+    background-color: #ff4d4d; /* Red background */
+    color: white; /* White 'X' icon */
+    border: none;
+    border-radius: 3px;
+    width: 24px;
+    height: 24px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .notification-close-btn:hover {
+    background-color: #e63939; /* Darker red on hover */
+  }
+  

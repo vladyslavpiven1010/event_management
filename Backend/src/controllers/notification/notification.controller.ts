@@ -9,11 +9,12 @@ import {
   import { JwtAuthGuard } from 'src/core/jwt-auth.guard';
   import { NotificationService } from 'src/core/services';
   import { BadRequestException, Get } from '@nestjs/common';
+  import { EventService } from 'src/core/services';
   
   @Controller('notification')
   @UseGuards(JwtAuthGuard)
   export class NotificationController {
-    constructor(private readonly notificationService: NotificationService) {}
+    constructor(private readonly notificationService: NotificationService, private eventService: EventService) {}
     @Get()
     async getAllNotifications(@Req() request: any): Promise<any> {
       const notifications = await this.notificationService.findAllByUser(
@@ -24,10 +25,12 @@ import {
   
     @Get('all_own')
     async viewNotificationHistory(@Req() request: any): Promise<any> {
-      const userNotifications = await this.notificationService.findAllByUser(
-        request.user.sub,
-      );
-      return userNotifications;
+        await this.eventService.notifyUserAboutMostFrequentCategoryEvents(request.user.sub);
+        const userNotifications = await this.notificationService.findAllByUser(
+            request.user.sub,
+        );
+        
+        return userNotifications;
     }
   
     @Delete(':id')
@@ -58,4 +61,3 @@ import {
       };
     }
   }
-  
