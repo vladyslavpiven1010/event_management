@@ -671,6 +671,21 @@ const CompanyProfile = () => {
         <span style={{ cursor: "pointer" }} onClick={handleOpenSettings}>
           ⚙
         </span>
+        <button
+          style={{
+            backgroundColor: "#4CAF50",
+            color: "white",
+            border: "none",
+            padding: "10px 20px",
+            borderRadius: "5px",
+            cursor: "pointer",
+            fontWeight: "bold",
+            marginBottom: "20px",
+          }}
+          onClick={() => navigate(`/`)}
+        >
+          Back to Home
+        </button>
       </div>
 
       {/* Render Modal */}

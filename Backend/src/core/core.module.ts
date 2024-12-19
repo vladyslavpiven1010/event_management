@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
-import { AuthService, CategoryService, CompanyService, EventService, TicketService, UserService, TokenService } from './services';
-import { JwtModule, JwtService } from '@nestjs/jwt';
+import { AuthService, CategoryService, CompanyService, EventService, TicketService, UserService, TokenService, NotificationService } from './services';
+import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Category, Company, Event, Ticket, Token, User } from './entities';
-import { JwtAuthGuard } from './jwt-auth.guard';
+import { Category, Company, Event, Notification, NotificationTopic, Ticket, Token, User, UserNotification } from './entities';
 
 @Module({
   providers: [
@@ -13,7 +12,8 @@ import { JwtAuthGuard } from './jwt-auth.guard';
     TicketService, 
     CompanyService, 
     UserService, 
-    AuthService, 
+    AuthService,
+    NotificationService,
     TokenService
   ],
   exports: [
@@ -25,10 +25,11 @@ import { JwtAuthGuard } from './jwt-auth.guard';
     UserService, 
     AuthService, 
     TokenService,
+    NotificationService,
     JwtModule
   ],
   imports: [
-    TypeOrmModule.forFeature([Category, Event, Ticket, User, Company, Token]),
+    TypeOrmModule.forFeature([Category, Event, Ticket, User, Company, Token, Notification, UserNotification, NotificationTopic]),
     JwtModule.register({
       secret: 'sdfsdf',
       signOptions: { expiresIn: '15m' },

@@ -64,10 +64,10 @@ export class Event {
   @Column()
   ticket_price: number;
 
-  @Column('decimal', { scale: 10 })
+  @Column('decimal', { scale: 10, nullable: true })
   lat: number;
 
-  @Column('decimal', { scale: 10 })
+  @Column('decimal', { scale: 10, nullable: true })
   lng: number;
 
   @CreateDateColumn()

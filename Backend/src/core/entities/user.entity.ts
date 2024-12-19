@@ -4,6 +4,7 @@ import { Event } from './event.entity';
 import { Ticket } from './ticket.entity';
 import { VerificationCode } from './verification-code.entity';
 import { Company } from './company.entity';
+import { UserNotification } from './user-notification.entity';
 
 /**
   * Entity interface that represents category.
@@ -31,6 +32,12 @@ export class User {
   })
   @JoinColumn({ name: 'company_id' })
   company_id: Company;
+
+  @OneToMany(
+    () => UserNotification,
+    (userNotification) => userNotification.user,
+  )
+  userNotifications: UserNotification[];
 
   @OneToMany((type) => Event, (event) => event.id)
   events: Event[];

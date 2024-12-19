@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Get, Patch, Param, Delete, UseGuards, Req, ForbiddenException, BadRequestException } from '@nestjs/common';
-import { CompanyService, EventService, UserService } from 'src/core/services';
+import { CompanyService, EventService, NotificationService, UserService } from 'src/core/services';
 import { CreateCompanyReqApiDto } from './dto/create-companydto';
 import { UpdateCompanyReqApiDto } from './dto/update-company.dto';
 import { JwtAuthGuard, ERole } from 'src/core/jwt-auth.guard';
@@ -14,7 +14,8 @@ export class CompanyController {
     private authService: AuthService,
     private companyService: CompanyService, 
     private userService: UserService,
-    private eventService: EventService)
+    private eventService: EventService,
+    private notificationService: NotificationService)
     {}
 
   @Get()
@@ -56,7 +57,7 @@ export class CompanyController {
 
     return {
       company,
-      accessToken: newAccessToken, // Return the updated token
+      accessToken: newAccessToken,
     };
   }
 

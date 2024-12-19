@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
-import { UserService } from 'src/core/services';
+import { NotificationService, UserService } from 'src/core/services';
 import { UpdateUserReqApiDto } from './dto/update-user.dto';
 import { JwtAuthGuard, ERole } from 'src/core/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -8,7 +8,7 @@ import { RequiredRoles } from '../auth/roles.decorator';
 @Controller('user')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UserController {
-    constructor(private userService: UserService) {}
+    constructor(private userService: UserService, private notificationService: NotificationService) {}
 
     @Get()
     async getUsers(): Promise<any> {
@@ -22,7 +22,6 @@ export class UserController {
         return user;
     }
     
-
     @Get(':id')
     async getUser(@Param() params, @Req() request: any): Promise<any> {
         const user = await this.userService.findOneById(params["id"]);
@@ -53,5 +52,43 @@ export class UserController {
 
         const ticket = await this.userService.remove(params["id"]);
         return ticket;
+    }
+
+    /**
+     * Accept the invitation to join a company
+     */
+    @Patch('accept-invitation/:company_id')
+    async acceptInvitation(
+        @Req() request: any,
+        @Param() params: number,
+    ): Promise<any> {
+        await this.userService.updateToMember(
+            request.user.sub,
+            params['company_id'],
+        );
+
+        await this.notificationService.sendNotificationToUser(
+            request.user.sub,
+            `You have successfully joined the company ${request.body.company_name}. Welcome!`,
+            1
+        );
+
+        return 'Success';
+    }
+
+    /**
+     * Reject the invitation to join a company
+     */
+    @Patch('reject-invitation')
+    async rejectInvitation(@Req() request: any): Promise<any> {
+        await this.userService.updateToUserRole(request.user.sub);
+
+        await this.notificationService.sendNotificationToUser(
+        request.user.sub,
+        `You have rejected the invitation to join the company ${request.body.company_name}.`,
+        1
+        );
+
+        return 'Success';
     }
 }

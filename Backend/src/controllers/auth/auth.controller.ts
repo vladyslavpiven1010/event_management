@@ -17,7 +17,7 @@ export class AuthController {
   @Post('register')
   async register(@Body() registerUserDto: RegisterUserDto) {
     try {
-      return await this.authService.register(registerUserDto);
+      await this.authService.register(registerUserDto);
     } catch (error) {
       console.error('Error during registration:', error.message, error.stack);
       throw error;

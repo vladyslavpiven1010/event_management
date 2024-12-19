@@ -49,19 +49,19 @@ export class TicketController {
         return ticket;
     }
 
-    @Patch(':id')
-    async updateTicket(@Req() request: any, @Param() params: number, @Body() ticketDto: UpdateTicketReqApiDto): Promise<any> {
-        const ticket = await this.ticketService.findOne(params["id"]);
-        const event = await this.eventService.findOne(ticketDto.event_id);
+    // @Patch(':id')
+    // async updateTicket(@Req() request: any, @Param() params: number, @Body() ticketDto: UpdateTicketReqApiDto): Promise<any> {
+    //     const ticket = await this.ticketService.findOne(params["id"]);
+    //     const event = await this.eventService.findOne(ticketDto.event_id);
 
-        if (!ticket) throw new BadRequestException("Ticket with this credentials does not exist");
-        if (!event) throw new BadRequestException("Event with this id does not exist");
-        if (request.user.role !== ERole.ADMIN)
-            throw new ForbiddenException('You do not have permission to update this ticket');
+    //     if (!ticket) throw new BadRequestException("Ticket with this credentials does not exist");
+    //     if (!event) throw new BadRequestException("Event with this id does not exist");
+    //     if (request.user.role !== ERole.ADMIN)
+    //         throw new ForbiddenException('You do not have permission to update this ticket');
 
-        const updatedTicket = await this.ticketService.update(params["id"], ticketDto);
-        return updatedTicket;
-    }
+    //     const updatedTicket = await this.ticketService.update(params["id"], ticketDto);
+    //     return updatedTicket;
+    // }
 
     @Delete(':id')
     async deleteTicket(@Req() request: any, @Param() params: number): Promise<any> {

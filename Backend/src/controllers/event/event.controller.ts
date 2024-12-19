@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Get, Patch, Param, Query, Delete, UseGuards, Req, ForbiddenException, BadRequestException } from '@nestjs/common';
-import { EventService } from 'src/core/services';
+import { EventService, NotificationService } from 'src/core/services';
 import { CreateEventReqApiDto } from './dto/create-event.dto';
 import { UpdateEventReqApiDto } from './dto/update-event.dto';
 import { Event } from 'src/core/entities';
@@ -9,7 +9,7 @@ import { RequiredRoles } from '../auth/roles.decorator';
 
 @Controller('event')
 export class EventController {
-    constructor(private eventService: EventService) {}
+    constructor(private eventService: EventService, private notificationService: NotificationService) {}
 
     @Get()
     async getEvents(
@@ -57,13 +57,14 @@ export class EventController {
     async updateEvent(@Req() request: any, @Param() params: number, @Body() eventDto: UpdateEventReqApiDto): Promise<any> {
         const event = await this.eventService.findOne(params["id"]);
 
-        console.log(event)
-
         if (!event) throw new BadRequestException("Event with this credentials does not exist");
         if (request.user.role !== ERole.ADMIN && event.user_id.id !== request.user.sub) 
           throw new ForbiddenException('You do not have permission to update this event');
 
         const updatedEvent = await this.eventService.update(params["id"], eventDto);
+        
+        await this.notificationService.notifyUsersOfEventUpdate(updatedEvent.id, `Event with id ${updatedEvent.id} was updated`);
+        
         return updatedEvent;
     }
 

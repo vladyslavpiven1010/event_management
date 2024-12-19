@@ -7,10 +7,11 @@ import {
   TicketController,
   UserController,
   CompanyController,
-  AuthController
+  AuthController,
+  NotificationController
 } from './controllers';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Category, Company, Event, Role, Ticket, User, VerificationCode } from './core/entities';
+import { Category, Company, Event, Notification, NotificationTopic, Role, Ticket, User, UserNotification, VerificationCode } from './core/entities';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { Category, Company, Event, Role, Ticket, User, VerificationCode } from '
       username: 'postgres',
       password: 'postgres',
       database: 'Event_Management_System',
-      entities: [User, Company, Event, Ticket, Role, VerificationCode, Category],
+      entities: [User, Company, Event, Ticket, Role, VerificationCode, Category, Notification, UserNotification, NotificationTopic],
       synchronize: true,
       autoLoadEntities: true
     }),
@@ -34,7 +35,8 @@ import { Category, Company, Event, Role, Ticket, User, VerificationCode } from '
     TicketController,
     UserController,
     CompanyController,
-    AuthController
+    AuthController,
+    NotificationController
   ],
   providers: [],
   exports: []

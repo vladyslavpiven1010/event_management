@@ -140,15 +140,6 @@ const UpdateModal = ({ userId, companyId, isCompany, onClose }) => {
                     />
                   </label>
                   <label>
-                    <h3>Birth Date</h3>
-                    <input
-                      type="date"
-                      name="birth_date"
-                      value={data.birth_date?.slice(0, 10) || ""}
-                      onChange={handleInputChange}
-                    />
-                  </label>
-                  <label>
                     <h3>Gender</h3>
                     <select
                       name="gender"
